@@ -23,6 +23,14 @@ set(PROJECT_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR})
 set(CXX_DISABLE_WERROR True)
 set(CMAKE_VERBOSE_MAKEFILE True)
 
+# Set clang as compiler
+if(NOT CMAKE_CXX_COMPILER)
+  set(CMAKE_CXX_COMPILER clang++)
+endif()
+if(NOT CMAKE_C_COMPILER)
+  set(CMAKE_C_COMPILER clang)
+endif()
+
 # ----------------------------------------------------
 # --- OPTIONS  ---------------------------------------
 # Need to be set before including base.cmake
