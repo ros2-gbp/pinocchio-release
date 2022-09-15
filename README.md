@@ -1,3 +1,26 @@
+## pinocchio (humble) - 2.6.10-2
+
+The packages in the `pinocchio` repository were released into the `humble` distro by running `/usr/bin/bloom-release -r humble pinocchio -y` on `Thu, 15 Sep 2022 20:06:17 -0000`
+
+The `pinocchio` package was released.
+
+Version of package(s) in repository `pinocchio`:
+
+- upstream repository: https://github.com/stack-of-tasks/pinocchio.git
+- release repository: https://github.com/ros2-gbp/pinocchio-release.git
+- rosdistro version: `2.6.10-1`
+- old version: `2.6.10-1`
+- new version: `2.6.10-2`
+
+Versions of tools used:
+
+- bloom version: `0.11.2`
+- catkin_pkg version: `0.5.2`
+- rosdep version: `0.22.1`
+- rosdistro version: `0.9.0`
+- vcstools version: `0.1.42`
+
+
 ## pinocchio (humble) - 2.6.10-1
 
 The packages in the `pinocchio` repository were released into the `humble` distro by running `/usr/bin/bloom-release -r humble pinocchio` on `Thu, 15 Sep 2022 12:24:20 -0000`
