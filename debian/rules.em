@@ -12,7 +12,7 @@ export DH_VERBOSE=1
 # of this sort:
 #  https://code.ros.org/trac/ros/ticket/2977
 #  https://code.ros.org/trac/ros/ticket/3842
-export LDFLAGS=-s
+export LDFLAGS=-Wl,-s
 export PKG_CONFIG_PATH=@(InstallationPrefix)/lib/pkgconfig
 # Explicitly enable -DNDEBUG, see:
 # 	https://github.com/ros-infrastructure/bloom/issues/327
