@@ -1,7 +1,7 @@
-From 93e0273c959f1d6a1ac7c18e9321f0572448ac72 Mon Sep 17 00:00:00 2001
+From 0fa931a023007644b9d077a38141f5424910ea9a Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Thu, 15 Sep 2022 21:02:33 +0100
-Subject: [PATCH 2/2] rules.em: Set LDFLAGS=-Wl,-s
+Subject: [PATCH 2/3] rules.em: Set LDFLAGS=-Wl,-s
 
 ---
  debian/rules.em | 2 +-
