@@ -158,8 +158,11 @@ macro(ADD_PYTHON_UNIT_TEST NAME SOURCE)
     OUTPUT_VARIABLE PATHSEP
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 
+  list(REMOVE_DUPLICATES PYTHONPATH)
   if(WIN32)
-    string(REPLACE ";" ":" PYTHONPATH_STR "${PYTHONPATH}")
+    # ensure that severals paths stay together as ENV variable PYTHONPATH when
+    # passed to python test via PROPERTIES
+    string(REPLACE ";" "\;" PYTHONPATH_STR "${PYTHONPATH}")
   else(WIN32)
     string(REPLACE ";" "${PATHSEP}" PYTHONPATH_STR "${PYTHONPATH}")
   endif(WIN32)
