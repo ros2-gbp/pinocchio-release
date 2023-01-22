@@ -83,14 +83,22 @@ namespace pinocchio
           .staticmethod("CreateCapsule")
 #endif // PINOCCHIO_WITH_HPP_FCL
         ;
-        bp::register_ptr_to_python<CollisionGeometryPtr>();
+
+        // Check registration
+        {
+          const bp::type_info info = bp::type_id<CollisionGeometryPtr>();
+          const bp::converter::registration* reg = bp::converter::registry::query(info);
+          // We just need to check if the type shared_ptr<CollisionGeometry> exist in the registry
+          if(!reg)
+            bp::register_ptr_to_python<CollisionGeometryPtr>();
+        }
       }
 
 #ifdef PINOCCHIO_WITH_HPP_FCL
       static GeometryObject maker_capsule(const double radius, const double length)
       {
         return GeometryObject("",FrameIndex(0),JointIndex(0),
-                              boost::shared_ptr<fcl::CollisionGeometry>(new fcl::Capsule(radius, length)),
+                              pinocchio::shared_ptr<fcl::CollisionGeometry>(new fcl::Capsule(radius, length)),
                               SE3::Identity());
 
       }
