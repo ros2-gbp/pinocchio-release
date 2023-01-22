@@ -1,4 +1,4 @@
-From f166de26f615028d002a9050279589e3473c474a Mon Sep 17 00:00:00 2001
+From 893a3be60c42e77d2b7b25eb551a2582f531ac4a Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 16 Aug 2022 13:38:14 +0100
 Subject: [PATCH 3/3] Patch: Activate hpp-fcl
@@ -8,7 +8,7 @@ Subject: [PATCH 3/3] Patch: Activate hpp-fcl
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 437ccd8..90420ce 100644
+index a7194a6..4986ec7 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -80,7 +80,7 @@ OPTION(BUILD_ADVANCED_TESTING "Build the advanced tests (multiprecision, etc.) o
