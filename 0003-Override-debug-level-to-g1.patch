@@ -1,4 +1,4 @@
-From 39464fdedbea956011c4c3bd8712c59a051b46ea Mon Sep 17 00:00:00 2001
+From 7e962f5e88977f547929435165edb2c3084b8a67 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 11 Oct 2022 23:27:10 +0100
 Subject: [PATCH 3/3] Override debug level to g1
