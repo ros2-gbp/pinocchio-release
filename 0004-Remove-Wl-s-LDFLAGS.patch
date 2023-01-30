@@ -1,7 +1,7 @@
-From c34ae1331a81d0383c8b55875935be09b56459c0 Mon Sep 17 00:00:00 2001
+From 41b8985774077862074ee32c6c2b93d278f0784e Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Mon, 30 Jan 2023 06:54:32 +0000
-Subject: [PATCH 4/4] Remove -Wl,-s LDFLAGS
+Subject: [PATCH 4/5] Remove -Wl,-s LDFLAGS
 
 ---
  debian/rules.em | 2 +-
