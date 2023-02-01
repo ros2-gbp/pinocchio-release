@@ -17,7 +17,7 @@ export PKG_CONFIG_PATH=@(InstallationPrefix)/lib/pkgconfig
 # Explicitly enable -DNDEBUG, see:
 # 	https://github.com/ros-infrastructure/bloom/issues/327
 # Explicitly reduce level of debug symbols to avoid OOM
-export DEB_CXXFLAGS_MAINT_APPEND=-DNDEBUG -g1
+export DEB_CXXFLAGS_MAINT_APPEND=-DNDEBUG -g1 -fno-lto
 ifneq ($(filter nocheck,$(DEB_BUILD_OPTIONS)),)
 	BUILD_TESTING_ARG=-DBUILD_TESTING=OFF
 endif
