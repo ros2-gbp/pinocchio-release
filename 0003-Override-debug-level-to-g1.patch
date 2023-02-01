@@ -1,7 +1,7 @@
-From bcd50a1b589c12fb22446432ef0ed800c2ed2d63 Mon Sep 17 00:00:00 2001
+From 2b789d455d764b5659e055853503e3ca5f403f68 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 11 Oct 2022 23:27:10 +0100
-Subject: [PATCH 3/5] Override debug level to g1
+Subject: [PATCH 3/6] Override debug level to g1
 
 ---
  debian/rules.em | 3 ++-
