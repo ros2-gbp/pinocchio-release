@@ -1,4 +1,4 @@
-From da2cd8158bab9aec096fbd69c60485cc4f3499d2 Mon Sep 17 00:00:00 2001
+From 6d42b1893ee4116edd8fe6334dae94d78893ab6c Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Sat, 13 Aug 2022 15:01:52 +0100
 Subject: [PATCH 3/3] Patch: Activate HPP-FCL
