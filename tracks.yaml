@@ -106,4 +106,5 @@ tracks:
     ros_distro: rolling
     vcs_type: git
     vcs_uri: https://github.com/stack-of-tasks/pinocchio.git
-    version: :{auto}
+    version: 2.6.17
+    version_saved: :{auto}
