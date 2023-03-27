@@ -100,7 +100,7 @@ tracks:
     last_version: 2.6.17
     name: upstream
     patches: null
-    release_inc: '2'
+    release_inc: '3'
     release_repo_url: git@github.com:ros2-gbp/pinocchio-release.git
     release_tag: v:{version}
     ros_distro: rolling
