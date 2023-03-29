@@ -1,4 +1,4 @@
-From c730d762eccf2e94ed3c65f0c20e0d81877268cf Mon Sep 17 00:00:00 2001
+From 74b9c9ece408a093fde261017526df2caf6e1241 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Thu, 15 Sep 2022 21:02:33 +0100
 Subject: [PATCH 2/6] rules.em: Set LDFLAGS=-Wl,-s
