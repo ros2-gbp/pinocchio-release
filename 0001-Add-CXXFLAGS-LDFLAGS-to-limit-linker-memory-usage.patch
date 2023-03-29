@@ -1,0 +1,28 @@
+From 32dc3adef2517ab5135188cc7379e7bd376e9334 Mon Sep 17 00:00:00 2001
+From: Scott K Logan <logans@cottsay.net>
+Date: Tue, 28 Mar 2023 17:31:21 -0700
+Subject: [PATCH] Add CXXFLAGS/LDFLAGS to limit linker memory usage
+
+Co-authored-by: Wolfgang Merkt <w.merkt@gmail.com>
+---
+ rpm/template.spec.em | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/rpm/template.spec.em b/rpm/template.spec.em
+index b1217d0..9f5e2a4 100644
+--- a/rpm/template.spec.em
++++ b/rpm/template.spec.em
+@@ -34,6 +34,10 @@ Source0:        %{name}-%{version}.tar.gz
+ %autosetup -p1
+ 
+ %build
++# Explicitly reduce level of debug symbols to avoid OOM
++CXXFLAGS="${CXXFLAGS:-%optflags} -DNDEBUG -g1 -fno-lto"; export CXXFLAGS
++LDFLAGS="${LDFLAGS:-%__global_ldflags} -fno-lto"; export LDFLAGS
++
+ # In case we're installing to a non-standard location, look for a setup.sh
+ # in the install tree and source it.  It will set things like
+ # CMAKE_PREFIX_PATH, PKG_CONFIG_PATH, and PYTHONPATH.
+-- 
+2.39.2
+
