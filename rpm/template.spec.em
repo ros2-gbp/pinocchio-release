@@ -34,6 +34,10 @@ Source0:        %{name}-%{version}.tar.gz
 %autosetup -p1
 
 %build
+# Explicitly reduce level of debug symbols to avoid OOM
+CXXFLAGS="${CXXFLAGS:-%optflags} -DNDEBUG -g1 -fno-lto"; export CXXFLAGS
+LDFLAGS="${LDFLAGS:-%__global_ldflags} -fno-lto"; export LDFLAGS
+
 # In case we're installing to a non-standard location, look for a setup.sh
 # in the install tree and source it.  It will set things like
 # CMAKE_PREFIX_PATH, PKG_CONFIG_PATH, and PYTHONPATH.
