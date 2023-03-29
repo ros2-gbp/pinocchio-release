@@ -1,0 +1,25 @@
+From c730d762eccf2e94ed3c65f0c20e0d81877268cf Mon Sep 17 00:00:00 2001
+From: Wolfgang Merkt <w.merkt@gmail.com>
+Date: Thu, 15 Sep 2022 21:02:33 +0100
+Subject: [PATCH 2/6] rules.em: Set LDFLAGS=-Wl,-s
+
+---
+ debian/rules.em | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/debian/rules.em b/debian/rules.em
+index 2b70fb7..9266b55 100755
+--- a/debian/rules.em
++++ b/debian/rules.em
+@@ -12,7 +12,7 @@ export DH_VERBOSE=1
+ # of this sort:
+ #  https://code.ros.org/trac/ros/ticket/2977
+ #  https://code.ros.org/trac/ros/ticket/3842
+-export LDFLAGS=-s
++export LDFLAGS=-Wl,-s
+ export PKG_CONFIG_PATH=@(InstallationPrefix)/lib/pkgconfig
+ # Explicitly enable -DNDEBUG, see:
+ # 	https://github.com/ros-infrastructure/bloom/issues/327
+-- 
+2.39.2
+
