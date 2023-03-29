@@ -1,3 +1,26 @@
+## pinocchio (rolling) - 2.6.17-4
+
+The packages in the `pinocchio` repository were released into the `rolling` distro by running `/usr/bin/bloom-release -r rolling pinocchio` on `Wed, 29 Mar 2023 00:53:00 -0000`
+
+The `pinocchio` package was released.
+
+Version of package(s) in repository `pinocchio`:
+
+- upstream repository: https://github.com/stack-of-tasks/pinocchio.git
+- release repository: https://github.com/ros2-gbp/pinocchio-release.git
+- rosdistro version: `2.6.17-3`
+- old version: `2.6.17-3`
+- new version: `2.6.17-4`
+
+Versions of tools used:
+
+- bloom version: `0.11.2`
+- catkin_pkg version: `0.5.2`
+- rosdep version: `0.22.1`
+- rosdistro version: `0.9.0`
+- vcstools version: `0.1.42`
+
+
 ## pinocchio (rolling) - 2.6.17-3
 
 The packages in the `pinocchio` repository were released into the `rolling` distro by running `/usr/bin/bloom-release pinocchio -r rolling` on `Mon, 27 Mar 2023 20:36:26 -0000`
