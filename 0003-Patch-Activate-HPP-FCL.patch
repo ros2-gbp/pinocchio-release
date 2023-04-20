@@ -1,4 +1,4 @@
-From 8d6142c0b81bdf0b5055c0e7eba3c295bae2f6a9 Mon Sep 17 00:00:00 2001
+From ae82b8e3cfb79e302532d100ac14adfdc55a51e6 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Sat, 13 Aug 2022 14:49:39 +0100
 Subject: [PATCH 3/3] Patch: Activate HPP-FCL
@@ -21,5 +21,5 @@ index bcb7ddb..09448fd 100644
  OPTION(BUILD_WITH_CASADI_SUPPORT "Build the library with the support of CASADI" OFF)
  OPTION(BUILD_WITH_CODEGEN_SUPPORT "Build the library with the support of code generation (via CppADCodeGen)" OFF)
 -- 
-2.39.2
+2.34.1
 

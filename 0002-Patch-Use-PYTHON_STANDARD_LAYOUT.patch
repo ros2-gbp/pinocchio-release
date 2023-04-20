@@ -1,4 +1,4 @@
-From c7eefa484b8796897628f1380b6450b5e70cfcd6 Mon Sep 17 00:00:00 2001
+From 95faafb899cd3cfd871511fddba3e27464480ad9 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Sat, 13 Aug 2022 14:49:30 +0100
 Subject: [PATCH 2/3] Patch: Use PYTHON_STANDARD_LAYOUT
@@ -20,5 +20,5 @@ index 904fcc0..bcb7ddb 100644
  # Check if the submodule cmake have been initialized
  IF(NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/cmake/base.cmake")
 -- 
-2.39.2
+2.34.1
 
