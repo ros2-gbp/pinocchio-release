@@ -106,7 +106,8 @@ tracks:
     ros_distro: iron
     vcs_type: git
     vcs_uri: https://github.com/stack-of-tasks/pinocchio.git
-    version: :{auto}
+    version: 2.6.17
+    version_saved: :{auto}
   rolling:
     actions:
     - bloom-export-upstream :{vcs_local_uri} :{vcs_type} --tag :{release_tag} --display-uri
