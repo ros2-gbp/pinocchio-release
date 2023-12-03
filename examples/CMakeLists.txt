@@ -91,6 +91,11 @@ IF(BUILD_PYTHON_INTERFACE)
         append-urdf-model-with-another-model
         meshcat-viewer
         )
+      IF(PYTHON_VERSION_MAJOR EQUAL 3)
+        LIST(APPEND ${PROJECT_NAME}_PYTHON_EXAMPLES
+          static-contact-dynamics
+          )
+      ENDIF()
     ENDIF(BUILD_WITH_URDF_SUPPORT)
   ENDIF(hpp-fcl_FOUND)
 
