@@ -1,4 +1,4 @@
-From 271420ff67a4cea07d6d4b8f422c4a272defca4e Mon Sep 17 00:00:00 2001
+From df94729eaeb10567f8a1c254698d1a1a7f709c45 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Mon, 30 Jan 2023 06:54:32 +0000
 Subject: [PATCH 4/6] Remove -Wl,-s LDFLAGS
