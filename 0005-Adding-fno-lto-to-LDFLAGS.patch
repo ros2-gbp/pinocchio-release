@@ -1,4 +1,4 @@
-From e4a0187d3916b5db21283243257b4bc7e22743f4 Mon Sep 17 00:00:00 2001
+From 3a2e3513e311f396005714df5588279aec795cdd Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Mon, 30 Jan 2023 17:02:06 +0000
 Subject: [PATCH 5/6] Adding -fno-lto to LDFLAGS
@@ -21,5 +21,5 @@ index a7f8836..746e698 100755
  # Explicitly enable -DNDEBUG, see:
  # 	https://github.com/ros-infrastructure/bloom/issues/327
 -- 
-2.25.1
+2.43.0
 
