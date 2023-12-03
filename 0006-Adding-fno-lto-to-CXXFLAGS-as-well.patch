@@ -1,4 +1,4 @@
-From 4f5340a770d8a1d535a7e739b8ff2e6f60f6af17 Mon Sep 17 00:00:00 2001
+From 7eaa1c14f9c9d409a38c99302cbc0c175c477d54 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Wed, 1 Feb 2023 00:17:00 +0000
 Subject: [PATCH 6/6] Adding -fno-lto to CXXFLAGS as well
