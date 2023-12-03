@@ -3,7 +3,7 @@
 # Copyright (c) 2015 Wandercraft, 86 rue de Paris 91400 Orsay, France.
 #
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 
 SET(PROJECT_NAME pinocchio)
 SET(PROJECT_DESCRIPTION "A fast and flexible implementation of Rigid Body Dynamics algorithms and their analytical derivatives")
@@ -16,23 +16,15 @@ SET(PROJECT_USE_KEYWORD_LINK_LIBRARIES TRUE)
 SET(CXX_DISABLE_WERROR True)
 SET(CMAKE_VERBOSE_MAKEFILE True)
 
-# Set clang as compiler
-if(NOT CMAKE_CXX_COMPILER)
-  set(CMAKE_CXX_COMPILER clang++)
-endif()
-if(NOT CMAKE_C_COMPILER)
-  set(CMAKE_C_COMPILER clang)
-endif()
-
 # ----------------------------------------------------
 # --- OPTIONS  ---------------------------------------
 # Need to be set before including base.cmake
 # ----------------------------------------------------
 OPTION(INSTALL_DOCUMENTATION "Generate and install the documentation" OFF)
-option(PYTHON_STANDARD_LAYOUT "Enable standard Python package layout" ON)
 
 # Check if the submodule cmake have been initialized
-IF(NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/cmake/base.cmake")
+set(JRL_CMAKE_MODULES "${CMAKE_CURRENT_LIST_DIR}/cmake")
+IF(NOT EXISTS "${JRL_CMAKE_MODULES}/base.cmake")
   MESSAGE(FATAL_ERROR "\nPlease run the following command first:\ngit submodule update --init\n")
 ENDIF()
 
@@ -57,16 +49,11 @@ IF(CMAKE_VERSION VERSION_GREATER "3.12")
   CMAKE_POLICY(SET CMP0074 NEW)
 ENDIF()
 
-IF(WIN32)
-  SET(LINK copy_if_different)
-ELSE(WIN32)
-  SET(LINK create_symlink)
-ENDIF(WIN32)
-
 # --- OPTIONS ----------------------------------------
 OPTION(BUILD_BENCHMARK "Build the benchmarks" OFF)
 OPTION(BUILD_UTILS "Build the utils" OFF)
 OPTION(BUILD_PYTHON_INTERFACE "Build the Python bindings" ON)
+option(GENERATE_PYTHON_STUBS "Generate the Python stubs associated to the Python library" OFF)
 OPTION(BUILD_WITH_COMMIT_VERSION "Build libraries by setting specific commit version" OFF)
 
 IF(DEFINED BUILD_UNIT_TESTS)
@@ -80,7 +67,7 @@ OPTION(BUILD_ADVANCED_TESTING "Build the advanced tests (multiprecision, etc.) o
 
 # --- OPTIONAL DEPENDENCIES -------------------------
 OPTION(BUILD_WITH_URDF_SUPPORT "Build the library with the URDF format support" ON)
-OPTION(BUILD_WITH_COLLISION_SUPPORT "Build the library with the collision support (required HPP-FCL)" ON)
+OPTION(BUILD_WITH_COLLISION_SUPPORT "Build the library with the collision support (required HPP-FCL)" OFF)
 OPTION(BUILD_WITH_AUTODIFF_SUPPORT "Build the library with the automatic differentiation support (via CppAD)" OFF)
 OPTION(BUILD_WITH_CASADI_SUPPORT "Build the library with the support of CASADI" OFF)
 OPTION(BUILD_WITH_CODEGEN_SUPPORT "Build the library with the support of code generation (via CppADCodeGen)" OFF)
@@ -128,12 +115,6 @@ IF(BUILD_WITH_URDF_SUPPORT)
   SET(urdfdom_VERSION ${urdfdom_headers_VERSION})
   ADD_DEFINITIONS(-DPINOCCHIO_WITH_URDFDOM)
   LIST(APPEND CFLAGS_DEPENDENCIES "-DPINOCCHIO_WITH_URDFDOM")
-
-  IF(${urdfdom_VERSION} VERSION_GREATER "0.4.2")
-    SET(CMAKE_CXX_STANDARD 11)
-    SET(CMAKE_CXX_STANDARD_REQUIRED ON)
-    MESSAGE(STATUS "Since urdfdom >= 1.0.0, the default C++ standard is C++11. The project is then compiled with C++11 standard.")
-  ENDIF(${urdfdom_VERSION} VERSION_GREATER "0.4.2")
 ENDIF(BUILD_WITH_URDF_SUPPORT)
 
 IF(BUILD_WITH_AUTODIFF_SUPPORT)
@@ -158,6 +139,16 @@ SET(BOOST_REQUIRED_COMPONENTS filesystem serialization system)
 SET_BOOST_DEFAULT_OPTIONS()
 EXPORT_BOOST_DEFAULT_OPTIONS()
 ADD_PROJECT_DEPENDENCY(Boost REQUIRED COMPONENTS ${BOOST_REQUIRED_COMPONENTS})
+
+IF(Boost_VERSION_STRING VERSION_LESS 1.81)
+    IF(BUILD_WITH_URDF_SUPPORT AND ${urdfdom_VERSION} VERSION_GREATER "0.4.2")
+      CHECK_MINIMAL_CXX_STANDARD(11 ENFORCE)
+      MESSAGE(STATUS "Since urdfdom >= 1.0.0, the default C++ standard is C++11. The project is then compiled with C++11 standard.")
+    ENDIF()
+ELSE()
+  # Boost.Math will be C++14 starting in July 2023 (Boost 1.82 release)
+  CHECK_MINIMAL_CXX_STANDARD(14 ENFORCE)
+ENDIF()
 
 IF(BUILD_PYTHON_INTERFACE)
   MESSAGE(STATUS "The Python bindings of Pinocchio will be compiled along the main library. If you want to disable this feature, please set the option BUILD_PYTHON_INTERFACE to OFF.")
@@ -189,7 +180,7 @@ ENDIF(BUILD_PYTHON_INTERFACE)
 IF(BUILD_WITH_HPP_FCL_SUPPORT)
   ADD_DEFINITIONS(-DPINOCCHIO_WITH_HPP_FCL)
   LIST(APPEND CFLAGS_DEPENDENCIES "-DPINOCCHIO_WITH_HPP_FCL")
-  ADD_PROJECT_DEPENDENCY(hpp-fcl 1.7.3 REQUIRED PKG_CONFIG_REQUIRES "hpp-fcl >= 1.7.3")
+  ADD_PROJECT_DEPENDENCY(hpp-fcl 2.0.0 REQUIRED PKG_CONFIG_REQUIRES "hpp-fcl >= 2.0.0")
   # Check whether hpp-fcl python bindings are available.
   SET(BUILD_WITH_HPP_FCL_PYTHON_BINDINGS FALSE)
   IF(BUILD_PYTHON_INTERFACE)
@@ -207,85 +198,83 @@ IF(BUILD_WITH_HPP_FCL_SUPPORT)
   ENDIF(BUILD_PYTHON_INTERFACE)
 ENDIF(BUILD_WITH_HPP_FCL_SUPPORT)
 
+# Sources definition
+INCLUDE(sources.cmake)
+
+# URDF sources
+IF(BUILD_WITH_URDF_SUPPORT)
+  LIST(APPEND ${PROJECT_NAME}_CORE_SOURCES ${${PROJECT_NAME}_URDF_SOURCES})
+  LIST(APPEND ${PROJECT_NAME}_CORE_PUBLIC_HEADERS ${${PROJECT_NAME}_URDF_PUBLIC_HEADERS})
+ENDIF(BUILD_WITH_URDF_SUPPORT)
+
+# LibPython sources
+IF(BUILD_WITH_LIBPYTHON)
+  LIST(APPEND ${PROJECT_NAME}_CORE_PUBLIC_HEADERS
+    ${${PROJECT_NAME}_LIBPYTHON_PUBLIC_HEADERS})
+  LIST(APPEND ${PROJECT_NAME}_BINDINGS_PYTHON_SOURCES
+    ${${PROJECT_NAME}_BINDINGS_PYTHON_LIBPYTHON_SOURCES})
+  LIST(APPEND ${PROJECT_NAME}_BINDINGS_PYTHON_PUBLIC_HEADERS
+    ${${PROJECT_NAME}_BINDINGS_PYTHON_LIBPYTHON_PUBLIC_HEADERS})
+ENDIF(BUILD_WITH_LIBPYTHON)
+
+# HPP-FCL sources
+IF(BUILD_WITH_HPP_FCL_SUPPORT)
+  LIST(APPEND ${PROJECT_NAME}_CORE_PUBLIC_HEADERS
+    ${${PROJECT_NAME}_HPP_FCL_PUBLIC_HEADERS})
+  LIST(APPEND ${PROJECT_NAME}_BINDINGS_PYTHON_SOURCES
+    ${${PROJECT_NAME}_BINDINGS_PYTHON_HPP_FCL_SOURCES})
+  LIST(APPEND ${PROJECT_NAME}_BINDINGS_PYTHON_PUBLIC_HEADERS
+    ${${PROJECT_NAME}_BINDINGS_PYTHON_HPP_FCL_PUBLIC_HEADERS})
+ENDIF(BUILD_WITH_HPP_FCL_SUPPORT)
+
+# OpenMP and HPP-FCL+OpenMP sources
+IF(BUILD_WITH_OPENMP_SUPPORT)
+  LIST(APPEND ${PROJECT_NAME}_BINDINGS_PYTHON_SOURCES
+    ${${PROJECT_NAME}_BINDINGS_PYTHON_OPENMP_SOURCES})
+  LIST(APPEND ${PROJECT_NAME}_BINDINGS_PYTHON_PUBLIC_HEADERS
+    ${${PROJECT_NAME}_BINDINGS_PYTHON_OPENMP_PUBLIC_HEADERS})
+  IF(BUILD_WITH_HPP_FCL_SUPPORT)
+    LIST(APPEND ${PROJECT_NAME}_BINDINGS_PYTHON_SOURCES
+      ${${PROJECT_NAME}_BINDINGS_PYTHON_HPP_FCL_OPENMP_SOURCES})
+    LIST(APPEND ${PROJECT_NAME}_BINDINGS_PYTHON_PUBLIC_HEADERS
+      ${${PROJECT_NAME}_BINDINGS_PYTHON_HPP_FCL_OPENMP_PUBLIC_HEADERS})
+  ENDIF(BUILD_WITH_HPP_FCL_SUPPORT)
+ENDIF()
+
+# List headers to install
+LIST(APPEND ${PROJECT_NAME}_HEADERS
+  ${${PROJECT_NAME}_CORE_PUBLIC_HEADERS}
+  )
+IF(BUILD_PYTHON_INTERFACE)
+  LIST(APPEND ${PROJECT_NAME}_HEADERS
+    ${${PROJECT_NAME}_BINDINGS_PYTHON_PUBLIC_HEADERS}
+    )
+ENDIF(BUILD_PYTHON_INTERFACE)
+
+# Macros to update sources path in subdirs
+FUNCTION(REMOVE_PATH_FROM_LIST list_name path_name dest_list)
+  SET(list_name_)
+  FOREACH(header ${${list_name}})
+    STRING(REGEX REPLACE "^${path_name}" "" header ${header})
+    LIST(APPEND list_name_ ${header})
+  ENDFOREACH(header ${list_name_})
+  SET(${dest_list} ${list_name_} PARENT_SCOPE)
+ENDFUNCTION(REMOVE_PATH_FROM_LIST)
+
+FUNCTION(PREPEND_PATH_FROM_LIST list_name path_name dest_list)
+  SET(list_name_)
+  FOREACH(header ${${list_name}})
+    SET(header "${path_name}/${header}")
+    LIST(APPEND list_name_ ${header})
+  ENDFOREACH(header ${list_name_})
+  SET(${dest_list} ${list_name_} PARENT_SCOPE)
+ENDFUNCTION(PREPEND_PATH_FROM_LIST)
+
 # Enforce the preprocessed version of boost::list and boost::vector
 # This information is redundant with the content of include/pinocchio/container/boost-container-limits.hpp
 # but it avoids any compilation issue.
 ADD_DEFINITIONS(-DBOOST_MPL_LIMIT_LIST_SIZE=30)
 ADD_DEFINITIONS(-DBOOST_MPL_LIMIT_VECTOR_SIZE=30)
-
-# ----------------------------------------------------
-# --- INCLUDE ----------------------------------------
-# ----------------------------------------------------
-FILE(GLOB_RECURSE HEADERS
-     ${PROJECT_SOURCE_DIR}/src/*.hpp
-     ${PROJECT_SOURCE_DIR}/src/*.hxx
-     )
-
-IF(NOT BUILD_WITH_URDF_SUPPORT)
-  LIST(REMOVE_ITEM HEADERS
-    ${PROJECT_SOURCE_DIR}/src/parsers/urdf.hpp
-    ${PROJECT_SOURCE_DIR}/src/parsers/urdf/model.hxx
-    ${PROJECT_SOURCE_DIR}/src/parsers/urdf/geometry.hxx
-    ${PROJECT_SOURCE_DIR}/src/parsers/urdf/utils.hpp
-    ${PROJECT_SOURCE_DIR}/src/parsers/urdf/types.hpp
-    )
-ENDIF(NOT BUILD_WITH_URDF_SUPPORT)
-
-IF(NOT BUILD_WITH_HPP_FCL_SUPPORT)
-  LIST(REMOVE_ITEM HEADERS
-    ${PROJECT_SOURCE_DIR}/src/spatial/fcl-pinocchio-conversions.hpp
-    )
-ENDIF(NOT BUILD_WITH_HPP_FCL_SUPPORT)
-
-LIST(APPEND HEADERS macros.hpp)
-
-MAKE_DIRECTORY("${${PROJECT_NAME}_BINARY_DIR}/include/pinocchio")
-MAKE_DIRECTORY("${${PROJECT_NAME}_BINARY_DIR}/include/pinocchio/core")
-MAKE_DIRECTORY("${${PROJECT_NAME}_BINARY_DIR}/include/pinocchio/math")
-MAKE_DIRECTORY("${${PROJECT_NAME}_BINARY_DIR}/include/pinocchio/spatial")
-MAKE_DIRECTORY("${${PROJECT_NAME}_BINARY_DIR}/include/pinocchio/multibody")
-MAKE_DIRECTORY("${${PROJECT_NAME}_BINARY_DIR}/include/pinocchio/multibody/joint")
-MAKE_DIRECTORY("${${PROJECT_NAME}_BINARY_DIR}/include/pinocchio/multibody/liegroup")
-MAKE_DIRECTORY("${${PROJECT_NAME}_BINARY_DIR}/include/pinocchio/multibody/pool")
-MAKE_DIRECTORY("${${PROJECT_NAME}_BINARY_DIR}/include/pinocchio/multibody/visitor")
-MAKE_DIRECTORY("${${PROJECT_NAME}_BINARY_DIR}/include/pinocchio/parsers")
-MAKE_DIRECTORY("${${PROJECT_NAME}_BINARY_DIR}/include/pinocchio/parsers/urdf")
-MAKE_DIRECTORY("${${PROJECT_NAME}_BINARY_DIR}/include/pinocchio/utils")
-MAKE_DIRECTORY("${${PROJECT_NAME}_BINARY_DIR}/include/pinocchio/serialization")
-MAKE_DIRECTORY("${${PROJECT_NAME}_BINARY_DIR}/include/pinocchio/algorithm")
-MAKE_DIRECTORY("${${PROJECT_NAME}_BINARY_DIR}/include/pinocchio/algorithm/parallel")
-MAKE_DIRECTORY("${${PROJECT_NAME}_BINARY_DIR}/include/pinocchio/container")
-MAKE_DIRECTORY("${${PROJECT_NAME}_BINARY_DIR}/include/pinocchio/codegen")
-MAKE_DIRECTORY("${${PROJECT_NAME}_BINARY_DIR}/include/pinocchio/autodiff")
-MAKE_DIRECTORY("${${PROJECT_NAME}_BINARY_DIR}/include/pinocchio/autodiff/casadi")
-MAKE_DIRECTORY("${${PROJECT_NAME}_BINARY_DIR}/include/pinocchio/autodiff/casadi/math")
-MAKE_DIRECTORY("${${PROJECT_NAME}_BINARY_DIR}/include/pinocchio/autodiff/casadi/spatial")
-MAKE_DIRECTORY("${${PROJECT_NAME}_BINARY_DIR}/include/pinocchio/autodiff/casadi/utils")
-MAKE_DIRECTORY("${${PROJECT_NAME}_BINARY_DIR}/include/pinocchio/autodiff/cppad")
-MAKE_DIRECTORY("${${PROJECT_NAME}_BINARY_DIR}/include/pinocchio/autodiff/cppad/spatial")
-MAKE_DIRECTORY("${${PROJECT_NAME}_BINARY_DIR}/include/pinocchio/autodiff/cppad/math")
-MAKE_DIRECTORY("${${PROJECT_NAME}_BINARY_DIR}/include/pinocchio/autodiff/cppad/algorithm")
-MAKE_DIRECTORY("${${PROJECT_NAME}_BINARY_DIR}/include/pinocchio/autodiff/cppad/utils")
-
-SET(HEADERS_)
-FOREACH(header ${HEADERS})
-  STRING(REGEX REPLACE "${PROJECT_SOURCE_DIR}/src/" "" header ${header})
-  LIST(APPEND HEADERS_ ${header})
-  GET_FILENAME_COMPONENT(headerName ${header} NAME)
-  GET_FILENAME_COMPONENT(headerPath ${header} PATH)
-  EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E ${LINK}
-    ${${PROJECT_NAME}_SOURCE_DIR}/src/${header}
-    ${${PROJECT_NAME}_BINARY_DIR}/include/${PROJECT_NAME}/${header})
-  INSTALL(FILES ${${PROJECT_NAME}_SOURCE_DIR}/src/${header}
-          DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}/${headerPath}
-          PERMISSIONS OWNER_READ GROUP_READ WORLD_READ OWNER_WRITE)
-ENDFOREACH(header)
-SET(HEADERS ${HEADERS_})
-
-LIST(APPEND HEADERS
-     ${${PROJECT_NAME}_BINARY_DIR}/include/${PROJECT_NAME}/config.hpp
-     ${${PROJECT_NAME}_BINARY_DIR}/include/${PROJECT_NAME}/deprecated.hpp
-     ${${PROJECT_NAME}_BINARY_DIR}/include/${PROJECT_NAME}/warning.hpp)
 
 # --- MAIN LIBRARY -------------------------------------------------------------
 ADD_SUBDIRECTORY(src)
