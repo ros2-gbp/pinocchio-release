@@ -85,7 +85,7 @@ from a SciPy-like vector to a Pinocchio-like vector using:
 ```py
 import numpy as np
 x = np.array([1.0, 2.0, 3.0])
-q = np.matrix(x).T
+q = np.array(x)
 x = q.getA()[:, 0]
 ```
 
@@ -146,7 +146,7 @@ PKG = '/opt/openrobots/share'
 URDF = join(PKG, 'romeo_description/urdf/romeo.urdf')
 
 robot = RomeoWrapper(URDF, [PKG])  # Load urdf model
-robot.initDisplay(loadModel=True)
+robot.initViewer(loadModel=True)
 ```
 
 Additionally, the index of right
