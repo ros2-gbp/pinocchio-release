@@ -13,10 +13,11 @@ from example_robot_data import load_full
 class RobotTestCase(unittest.TestCase):
     def check(self, name, expected_nq, expected_nv, one_kg_bodies=[]):
         """Helper function for the real tests"""
-        robot, _, urdf, _ = load_full(name, display=False)
+        robot, _, urdf, _ = load_full(name, display=False, verbose=True)
         self.assertEqual(robot.model.nq, expected_nq)
         self.assertEqual(robot.model.nv, expected_nv)
         self.assertTrue(hasattr(robot, "q0"))
+        self.assertTrue(hasattr(robot, "urdf"))
         if pybullet:
             self.check_pybullet(urdf, one_kg_bodies)
 
@@ -32,11 +33,20 @@ class RobotTestCase(unittest.TestCase):
                 self.assertIn(joint[12].decode(), one_kg_bodies)
         pybullet.disconnect(client_id)
 
+    def test_b1(self):
+        self.check("b1", 19, 18)
+
+    def test_go1(self):
+        self.check("go1", 19, 18)
+
     def test_a1(self):
         self.check("a1", 19, 18)
 
     def test_anymal(self):
         self.check("anymal", 19, 18)
+
+    def test_anymal_c(self):
+        self.check("anymal_c", 19, 18)
 
     def test_anymal_kinova(self):
         self.check("anymal_kinova", 25, 24)
@@ -50,7 +60,8 @@ class RobotTestCase(unittest.TestCase):
         except ImportError:
             import pinocchio
 
-            self.assertLess(int(pinocchio.__version__.split(".")[0]), 3)
+            pin_version = tuple(int(i) for i in pinocchio.__version__.split("."))
+            self.assertLess(pin_version, (2, 9, 1))
 
     def test_double_pendulum(self):
         self.check("double_pendulum", 2, 2)
@@ -84,6 +95,15 @@ class RobotTestCase(unittest.TestCase):
 
     def test_panda(self):
         self.check("panda", 9, 9)
+
+    def test_allegro_right(self):
+        self.check("allegro_right_hand", 16, 16)
+
+    def test_allegro_left(self):
+        self.check("allegro_left_hand", 16, 16)
+
+    def test_quadruped(self):
+        self.check("quadruped", 15, 14)
 
     def test_romeo(self):
         self.check("romeo", 62, 61)
