@@ -1,4 +1,4 @@
-# Copyright (C) 2008-2021 LAAS-CNRS, JRL AIST-CNRS, INRIA.
+# Copyright (C) 2008-2024 LAAS-CNRS, JRL AIST-CNRS, INRIA.
 #
 # This program is free software: you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -165,8 +165,14 @@ macro(FINDPYTHON)
       set(Python${_PYTHON_VERSION_MAJOR}_EXECUTABLE ${PYTHON_EXECUTABLE})
       set(Python${_PYTHON_VERSION_MAJOR}_INCLUDE_DIR ${PYTHON_INCLUDE_DIR})
 
+      if(SEARCH_FOR_NUMPY)
+        find_numpy()
+        set(Python_NumPy_INCLUDE_DIR ${NUMPY_INCLUDE_DIRS})
+      endif()
+
       find_package("Python${_PYTHON_VERSION_MAJOR}" REQUIRED
                    COMPONENTS ${PYTHON_COMPONENTS})
+
     else()
       # No hint was provided. We can then check for first Python 2, then Python
       # 3
@@ -526,6 +532,31 @@ macro(FIND_NUMPY)
       ERROR_QUIET)
     string(REGEX REPLACE "\n$" "" NUMPY_VERSION "${NUMPY_VERSION}")
     message(STATUS "  NUMPY_VERSION=${NUMPY_VERSION}")
+  endif()
+endmacro()
+
+# .rst: .. command:: FIND_SCIPY()
+#
+# Detect scipy module.
+#
+macro(FIND_SCIPY)
+  message(STATUS "Checking for SciPy")
+  execute_process(
+    COMMAND "${PYTHON_EXECUTABLE}" "-c" "import scipy; print (True)"
+    OUTPUT_VARIABLE IS_SCIPY
+    ERROR_QUIET)
+
+  if(NOT IS_SCIPY)
+    message(FATAL_ERROR "Failed to detect scipy")
+  else()
+    # Retrive SCIPY_VERSION
+    execute_process(
+      COMMAND "${PYTHON_EXECUTABLE}" "-c"
+              "import scipy; print (scipy.__version__)"
+      OUTPUT_VARIABLE SCIPY_VERSION
+      ERROR_QUIET)
+    string(REGEX REPLACE "\n$" "" SCIPY_VERSION "${SCIPY_VERSION}")
+    message(STATUS "  SCIPY_VERSION=${SCIPY_VERSION}")
   endif()
 endmacro()
 
