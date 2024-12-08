@@ -6,6 +6,247 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [3.3.0] - 2024-11-06
+
+### Added
+
+- Default visualizer can be changed with `PINOCCHIO_VIEWER` environment variable ([#2419](https://github.com/stack-of-tasks/pinocchio/pull/2419))
+- Add more Python and C++ examples related to inverse kinematics with 3d tasks ([#2428](https://github.com/stack-of-tasks/pinocchio/pull/2428))
+- Add parsing of equality/connect tag for closed-loop chains for MJCF format ([#2413](https://github.com/stack-of-tasks/pinocchio/pull/2413))
+- Add compatibility with NumPy 2 `__array__` API ([#2436](https://github.com/stack-of-tasks/pinocchio/pull/2436))
+- Added argument to let users decide of root joint name when parsing models (urdf, mjcf, sdf) ([#2402](https://github.com/stack-of-tasks/pinocchio/pull/2402))
+- Allow use of `pathlib.Path | str` for paths in python bindings ([#2431](https://github.com/stack-of-tasks/pinocchio/pull/2431))
+- Add Pseudo inertia and Log-cholesky parametrization ([#2296](https://github.com/stack-of-tasks/pinocchio/pull/2296))
+- Add Pixi support ([#2459](https://github.com/stack-of-tasks/pinocchio/pull/2459))
+
+### Fixed
+- Fix linkage of Boost.Serialization on Windows ([#2400](https://github.com/stack-of-tasks/pinocchio/pull/2400))
+- Fix mjcf parser appending of inertias at root joint ([#2403](https://github.com/stack-of-tasks/pinocchio/pull/2403))
+- Fix unit tests with GCC 13.3 ([#2406](https://github.com/stack-of-tasks/pinocchio/pull/2416)
+- Fix class abstract error for Rviz viewer ([#2425](https://github.com/stack-of-tasks/pinocchio/pull/2425))
+- Fix compilation issue with MSCV and C++17 ([#2437](https://github.com/stack-of-tasks/pinocchio/pull/2437))
+- Fix `pinocchio-test-py-robot_wrapper` when building with SDF and collision support ([#2437](https://github.com/stack-of-tasks/pinocchio/pull/2437))
+- Fix crash when calling `Inertia::FromDynamicParameters` in Python with wrong vector size ([#2296](https://github.com/stack-of-tasks/pinocchio/pull/2296))
+- Fix `examples/cassie-simulation.py` and `examples/talos-simulation.py` ([#2443](https://github.com/stack-of-tasks/pinocchio/pull/2443))
+- Fix build with CppAd 2024 ([#2459](https://github.com/stack-of-tasks/pinocchio/pull/2459))
+- Fix `pinocchio-test-cpp-mjcf` unittest with Boost 1.86 ([#2459](https://github.com/stack-of-tasks/pinocchio/pull/2459))
+- Fix `pinocchio-test-cpp-constraint-variants` uninitialized values ([#2459](https://github.com/stack-of-tasks/pinocchio/pull/2459))
+- Fix mixing library symbols between Pinocchio scalar bindings ([#2459](https://github.com/stack-of-tasks/pinocchio/pull/2459))
+- Fix bug for get{Joint,Frame}JacobianTimeVariation ([#2466](https://github.com/stack-of-tasks/pinocchio/pull/2466))
+
+### Changed
+
+- Modernize python code base with ruff ([#2418](https://github.com/stack-of-tasks/pinocchio/pull/2418))
+- Does not create a root_joint frame from parsed models (urdf, mjcf and sdf) when no root joint is provided ([#2402](https://github.com/stack-of-tasks/pinocchio/pull/2402))
+
+## [3.2.0] - 2024-08-27
+
+### Fixed
+- Append pinocchio optional libraries into pkg-config file ([#2322](https://github.com/stack-of-tasks/pinocchio/pull/2322))
+- Fixed support of DAE meshes with MeshCat ([#2331](https://github.com/stack-of-tasks/pinocchio/pull/2331))
+- Fixed pointer casts in urdf parser ([#2339](https://github.com/stack-of-tasks/pinocchio/pull/2339))
+- Remove CMake CMP0167 warnings ([#2347](https://github.com/stack-of-tasks/pinocchio/pull/2347))
+- Fixed urdfdom in ROS packaging ([#2341](https://github.com/stack-of-tasks/pinocchio/pull/2341))
+- Fixed overview-urdf cpp example ([#2384](https://github.com/stack-of-tasks/pinocchio/pull/2384))
+- Fixed mjcf model without a base link parsing ([#2386](https://github.com/stack-of-tasks/pinocchio/pull/2386))
+- Fixed talos-simulation.py, simulation-contact-dynamics.py and simulation-closed-kinematic-chains.py examples ([#2392](https://github.com/stack-of-tasks/pinocchio/pull/2392))
+
+### Added
+- Add getMotionAxis method to helical, prismatic, revolute and ubounded revolute joint ([#2315](https://github.com/stack-of-tasks/pinocchio/pull/2315))
+- Add initial compatiblity with coal (coal needs `-DCOAL_BACKWARD_COMPATIBILITY_WITH_HPP_FCL=ON`) ([#2323](https://github.com/stack-of-tasks/pinocchio/pull/2323))
+- Add compatibility with jrl-cmakemodules workspace ([#2333](https://github.com/stack-of-tasks/pinocchio/pull/2333))
+- Add ``collision_color`` parameter to `MeshcatVisualizer.loadViewerModel` ([#2350](https://github.com/stack-of-tasks/pinocchio/pull/2350))
+- Add ``BuildFromMJCF`` function to RobotWrapper ([#2363](https://github.com/stack-of-tasks/pinocchio/pull/2363))
+- Add more CasADi examples ([#2388](https://github.com/stack-of-tasks/pinocchio/pull/2388))
+
+### Removed
+- Remove deprecated headers related to joint constraints ([#2382](https://github.com/stack-of-tasks/pinocchio/pull/2382))
+
+### Changed
+- Use eigenpy to expose `GeometryObject::meshMaterial` variant ([#2315](https://github.com/stack-of-tasks/pinocchio/pull/2315))
+- GepettoViewer is no more the default viewer for RobotWrapper ([#2331](https://github.com/stack-of-tasks/pinocchio/pull/2331))
+- Modernize python code base with ruff ([#2367](https://github.com/stack-of-tasks/pinocchio/pull/2367))
+- Restructure CppAD and CasADi examples ([#2388](https://github.com/stack-of-tasks/pinocchio/pull/2388))
+- Enhance and fix CppAD benchmarks outputs ([#2393](https://github.com/stack-of-tasks/pinocchio/pull/2393))
+
+## [3.1.0] - 2024-07-04
+
+### Fixed
+
+- Fix `appendModel` when joints after the base are in parallel ([#2295](https://github.com/stack-of-tasks/pinocchio/pull/2295))
+- Fix `appendModel` build when called with template arguments different than the ones from `context` ([#2284](https://github.com/stack-of-tasks/pinocchio/pull/2284))
+- Fix `TransformRevoleTpl::rotation` and `TransformHelicalTpl::rotation` build ([#2284](https://github.com/stack-of-tasks/pinocchio/pull/2284))
+- Fix compilation issue for Boost 1.85 ([#2255](https://github.com/stack-of-tasks/pinocchio/pull/2255))
+- Fix python bindings of `contactInverseDynamics` ([#2263](https://github.com/stack-of-tasks/pinocchio/pull/2263))
+- Deactivate `BUILD_WITH_LIBPYTHON` when building with PyPy ([#2274](https://github.com/stack-of-tasks/pinocchio/pull/2274))
+- Fix Python bindings cross building with `hpp-fcl` ([#2288](https://github.com/stack-of-tasks/pinocchio/pull/2288))
+- Fix build issue on Windows when a deprecated header is included ([#2292](https://github.com/stack-of-tasks/pinocchio/pull/2292))
+- Fix build issue on Windows when building in Debug mode ([#2292](https://github.com/stack-of-tasks/pinocchio/pull/2292))
+- Fix visualization of meshes in meshcat ([#2294](https://github.com/stack-of-tasks/pinocchio/pull/2294))
+- Fix Anymal simulation test ([#2299](https://github.com/stack-of-tasks/pinocchio/pull/2299))
+- Fix contact derivatives and impulse dynamics tests ([#2300](https://github.com/stack-of-tasks/pinocchio/pull/2300))
+- Fix CMake compatibility with old console_bridge version ([#2312](https://github.com/stack-of-tasks/pinocchio/pull/2312))
+
+### Added
+
+- Python unittest for `contactInverseDynamics` function ([#2263](https://github.com/stack-of-tasks/pinocchio/pull/2263))
+- Added helper functions to return operation count of CasADi functions. ([#2275](https://github.com/stack-of-tasks/pinocchio/pull/2275))
+- C++ and Python unittest for `dIntegrateTransport` to check vector transport and its inverse ([#2273](https://github.com/stack-of-tasks/pinocchio/pull/2273))
+- Add kinetic and potential energy regressors ([#2282](https://github.com/stack-of-tasks/pinocchio/pull/2282))
+
+### Removed
+
+- Remove header `list.hpp` include for bindings of model and rnea ([#2263](https://github.com/stack-of-tasks/pinocchio/pull/2263))
+
+## [3.0.0] - 2024-05-27
+
+### Added
+
+#### Automatic differentiation
+
+- Full support of Casadi in the main library by [@jcarpent](https://github.com/jcarpent) and [@ManifoldFR](https://github.com/ManifoldFR)
+- Full support of Casadi for Python bindings by [@jcarpent](https://github.com/jcarpent)
+- Full support of Boost.Multiprecision in the main library by [@jcarpent](https://github.com/jcarpent)
+- Full support of Boost.Multiprecision for Python bindings by [@jcarpent](https://github.com/jcarpent)
+- Full support of CppAD and CppADCodeGen in the main library by [@jcarpent](https://github.com/jcarpent)
+- Full support of CppAD and CppADCodeGen for Python bindings by [@jcarpent](https://github.com/jcarpent) and [@proyan](https://github.com/proyan)
+
+#### Core features
+
+- Full support of constrained dynamical systems by [@jcarpent](https://github.com/jcarpent)
+- Full support of derivatives of constrained dynamical systems by [@jcarpent](https://github.com/jcarpent) and [@proyan](https://github.com/proyan)
+- Extended algorithms for constrained dynamics: constrained ABA, PV solvers, etc. by [@jcarpent](https://github.com/jcarpent) and [@AjSat](https://github.com/AjSat)
+- Add frictional contact solvers (PGS, ADMM) by [@jcarpent](https://github.com/jcarpent)
+- Add contact inverse dynamics by [@quentinll](https://github.com/quentinll)
+- Full support of broadphase algorithms in Pinocchio by [@jcarpent](https://github.com/jcarpent)
+- New joint supports (Helicoidal, Universal) by [@fabinsch](https://github.com/fabinsch) and [@MegMll](https://github.com/MegMll)
+- Add new algorithms for supporting Delassus factorizations for sparse, dense and tree-based systems by [@jcarpent](https://github.com/jcarpent)
+- Add full OpenMP support for many algorithms (ABA, RNEA, collision detection, etc.) by [@jcarpent](https://github.com/jcarpent)
+- Full support of GeometryModel, GeometryObject serialization by [@jcarpent](https://github.com/jcarpent)
+- Extended support of Meshcat by [@jcarpent](https://github.com/jcarpent), [@ManifoldFR](https://github.com/ManifoldFR) and [@jorisv](https://github.com/jorisv)
+- Extended testing and support of Lie groups operations by [@jcarpent](https://github.com/jcarpent) and [@ManifoldFR](https://github.com/ManifoldFR)
+- Full support of AVX512 and AVX2 vectorization for Python bindings by [@jcarpent](https://github.com/jcarpent)
+- Full support of the robot armature in RNEA, CRBA and ABA
+- Extended formulation of CRBA and ABA using WORLD convention for reduced computational burden in the derivative algorithms
+
+#### Parsers
+
+- Support of SDF format by [@proyan](https://github.com/proyan)
+- Support of MuJoCo format by [@MegMll](https://github.com/MegMll) and [@jorisv](https://github.com/jorisv)
+
+### Extra Algorithms
+- Added reachable workspace computation and vizualisation in collaboration with [@askuric](https://github.com/askuric) based on [pycapacity](https://gitlab.inria.fr/auctus-team/people/antunskuric/pycapacity) by [@MegMll](https://github.com/MegMll) and [@jorisv](https://github.com/jorisv)
+
+#### Packaging
+
+- Full support of template instantiation by [@fabinsch](https://github.com/fabinsch) and [@jorisv](https://github.com/jorisv)
+- Enhance support for Windows-based systems by [@jorisv](https://github.com/jorisv)
+- Splitting of the Pinocchio into sub-library for isolation by [@jorisv](https://github.com/jorisv)
+
+#### Compatibility
+
+- Add `PINOCCHIO_ENABLE_COMPATIBILITY_WITH_VERSION_2` define to activate compatibility with Pinocchio 2 API
+
+### Changed
+
+#### C++
+
+- Change minimum required version of C++ to C++11. Check for compatibility here: https://en.cppreference.com/w/cpp/compiler_support/11
+- Replace `pinocchio::BiasZeroTpl` by `pinocchio::MotionZeroTpl`
+- Replace `pinocchio::fusion::JointVisitorBase` by `pinocchio::fusion::JointUnaryVisitorBase`
+- Replace `pinocchio::fusion::push_front` by `pinocchio::fusion::append`
+- Replace `pinocchio::regressor::computeStaticRegressor` by `pinocchio::computeStaticRegressor`
+- Replace `pinocchio::jointJacobian` by `pinocchio::computeJointJacobian`
+- Replace `pinocchio::frameJacobian` by `pinocchio::computeFrameJacobian`
+- Replace `pinocchio::framesForwardKinematics` by `pinocchio::updateFramePlacements`
+- Replace `pinocchio::kineticEnergy` by `pinocchio::computeKineticEnergy`
+- Replace `pinocchio::potentialEnergy` by `pinocchio::computePotentialEnergy`
+- Replace `pinocchio::computeCentroidalDynamics` by `pinocchio::computeCentroidalMomentum` and `pinocchio::computeCentroidalMomentumTimeVariation`
+- Replace `pinocchio::centerOfMass(const ModelTpl&, DataTpl&, int, bool)` by `pinocchio::centerOfMass(const ModelTpl&, DataTpl&, KinematicLevel, bool)`
+- Replace `pinocchio::copy(const ModelTpl&, const DataTpl&, DataTpl&, int)` by `pinocchio::copy(const ModelTpl&, const DataTpl&, DataTpl&, KinematicLevel)`
+- Replace `pinocchio/algorithm/dynamics.hpp` by `pinocchio/algorithm/constrained-dynamics.hpp`
+- Change the order of arguments in some of `pinocchio::GeometryObject`'s constructors
+- Deprecate `pinocchio/algorithm/parallel/geometry.hpp` moved at `pinocchio/collision/parallel/geometry.hpp`
+- Deprecate `pinocchio/spatial/fcl-pinocchio-conversions.hpp` moved at `pinocchio/collision/fcl-pinocchio-conversions.hpp`
+- Deprecate `pinocchio/parsers/sample-models.hpp` moved at `pinocchio/multibody/sample-models.hpp`
+- Deprecate `pinocchio/math/cppad.hpp` moved at `pinocchio/autodiff/cppad.hpp`
+- Deprecate `pinocchio/math/cppadcg.hpp` moved at `pinocchio/autodiff/cppadcg.hpp`
+- Deprecate `pinocchio/math/casadi.hpp` moved at `pinocchio/autodiff/casadi.hpp`
+- Deprecate `pinocchio::FrameTpl::parent` replaced by `pinocchio::FrameTpl::parentJoint`
+- Deprecate `pinocchio::FrameTpl::previousFrame` replaced by `pinocchio::FrameTpl::parentFrame`
+- Deprecate `pinocchio/algorithm/contact-dynamics.hpp` algorithms replaced by `pinocchio/algorithm/constrained-dynamics.hpp`
+
+#### Python
+
+- Replace `pinocchio.utils.skew` by `pinocchio.skew`
+- Replace `pinocchio.utils.se3ToXYZQUAT` by `pinocchio.SE3ToXYZQUATtuple`
+- Replace `pinocchio.utils.XYZQUATToSe3` by `pinocchio.XYZQUATToSE3`
+- Replace `pinocchio.robot_wrapper.RobotWrapper.frameClassicAcceleration` by `pinocchio.robot_wrapper.RobotWrapper.frameClassicalAcceleration`
+- Replace `pinocchio.robot_wrapper.RobotWrapper.jointJacobian` by `pinocchio.robot_wrapper.RobotWrapper.computeJointJacobian`
+- Replace `pinocchio.robot_wrapper.RobotWrapper.frameJacobian` by `pinocchio.robot_wrapper.RobotWrapper.computeFrameJacobian`
+- Replace `pinocchio.robot_wrapper.RobotWrapper.initDisplay` by `pinocchio.robot_wrapper.RobotWrapper.initViewer`
+- Replace `pinocchio.robot_wrapper.RobotWrapper.loadDisplayModel` by `pinocchio.robot_wrapper.RobotWrapper.loadViewerModel`
+- Replace `pinocchio.deprecated.se3ToXYZQUATtuple` by `pinocchio.SE3ToXYZQUATtuple`
+- Replace `pinocchio.deprecated.se3ToXYZQUAT` by `pinocchio.SE3ToXYZQUAT`
+- Replace `pinocchio.deprecated.XYZQUATToSe3` by `pinocchio.XYZQUATToSE3`
+- Replace `pinocchio.deprecated.buildGeomFromUrdf(model, filename, [str])` by `pinocchio.buildGeomFromUrdf(model, filename, type, package_dirs, mesh_loader)`
+- Replace `pinocchio.rpy.npToTTuple` by `pinocchio.utils.npToTTuple`
+- Replace `pinocchio.rpy.npToTuple` by `pinocchio.utils.npToTuple`
+- Replace `pinocchio.jacobianSubtreeCoMJacobian` by `pinocchio.jacobianSubtreeCenterOfMass`
+
+### Removed
+
+#### C++
+
+- Remove `pinocchio::setGeometryMeshScales`
+- Remove some `pinocchio::forwardDynamics` signatures
+- Remove some `pinocchio::impulseDynamics` signatures
+
+#### Python
+
+- Remove `pinocchio.utils.cross`
+- Remove `pinocchio.robot_wrapper.RobotWrapper.initMeshcatDisplay`
+- Remove `pinocchio.deprecated.setGeometryMeshScales` by `pinocchio`
+
+
+## [2.7.1] - 2024-04-26
+
+### Changed
+- Modify algorithm that appends a model to another ([#2218](https://github.com/stack-of-tasks/pinocchio/pull/2218))
+- Set NOMINMAX as a public definitions on Windows ([#2139](https://github.com/stack-of-tasks/pinocchio/pull/2139))
+- Improve documentation of `enum ReferenceFrame` ([#2190](https://github.com/stack-of-tasks/pinocchio/pull/2190))
+- Improve documentation of `getJointJacobian` ([#2193](https://github.com/stack-of-tasks/pinocchio/pull/2193)).
+
+### Fixed
+- CMake now uses Relative Path instead of Absolute ([#2202](https://github.com/stack-of-tasks/pinocchio/pull/2202))
+- Order of frames in `ReducedModel` is now the same as in the full model ([#2160](https://github.com/stack-of-tasks/pinocchio/pull/2160))
+- Remove a lot of warnings ([#2139](https://github.com/stack-of-tasks/pinocchio/pull/2139))
+- `MeshcatVisualizer` doesn't crash anymore when there is no collision model defined ([#2147](https://github.com/stack-of-tasks/pinocchio/pull/2147))
+- Fix MSVC build ([#2155](https://github.com/stack-of-tasks/pinocchio/pull/2155))
+- Fix stub generation ([#2166](https://github.com/stack-of-tasks/pinocchio/pull/2166))
+- Clean up empty documentation pages and sections ([#2167](https://github.com/stack-of-tasks/pinocchio/pull/2167))
+- Fix SO(3) title and cross-section reference in the documentation ([#2210](https://github.com/stack-of-tasks/pinocchio/pull/2210))
+
+### Added
+- Add `examples/floating-base-velocity-viewer.py` to visualize floating base velocity ([#2143](https://github.com/stack-of-tasks/pinocchio/pull/2143))
+- Add remark to the documentation of `getFrame(Classical)Acceleration` functions ([#2169](https://github.com/stack-of-tasks/pinocchio/pull/2169))
+- Allow use of installed jrl-cmakemodules ([#2216](https://github.com/stack-of-tasks/pinocchio/pull/2216))
+
+## [2.7.0] - 2024-01-23
+
+### Added
+- Add `GeometryObject::meshMaterial` attribute ([#2084](https://github.com/stack-of-tasks/pinocchio/issues/2084))
+- Add Parser for mujoco mjcf models `pinocchio::mjcf::buildModel` and `pinocchio::mjcf::buildGeom`
+
+### Fixed
+
+- Use bp::ssize_t for recent version of Windows compilers ([#2102](https://github.com/stack-of-tasks/pinocchio/pull/2102))
+- Fix missing include for Boost >= 1.83 ([#2103](https://github.com/stack-of-tasks/pinocchio/pull/2103))
+- Remove f-strings to fix install with python 2 ([#2110](https://github.com/stack-of-tasks/pinocchio/pull/2110))
+- CMake: stop exporting CppAd/cppadcodegen & fetch submodule if not available ([#2112](https://github.com/stack-of-tasks/pinocchio/pull/2112))
+- Fix malloc issue in CRBA algo ([#2126](https://github.com/stack-of-tasks/pinocchio/pull/2126))
+- Fix build cppad and cppadcg with Boost < 1.77 ([#2132](https://github.com/stack-of-tasks/pinocchio/pull/2132))
+
 ## [2.6.21] - 2023-11-27
 
 ### Added
@@ -813,7 +1054,13 @@ The model can either be parsed from a URDF format or be created by appendending 
         • Fixed (concatenation of two consecutive bodies)
 
 
-[Unreleased]: https://github.com/stack-of-tasks/pinocchio/compare/v2.6.21...HEAD
+[Unreleased]: https://github.com/stack-of-tasks/pinocchio/compare/v3.3.0...HEAD
+[3.3.0]: https://github.com/stack-of-tasks/pinocchio/compare/v3.2.0...v3.3.0
+[3.2.0]: https://github.com/stack-of-tasks/pinocchio/compare/v3.1.0...v3.2.0
+[3.1.0]: https://github.com/stack-of-tasks/pinocchio/compare/v3.0.0...v3.1.0
+[3.0.0]: https://github.com/stack-of-tasks/pinocchio/compare/v2.7.1...v3.0.0
+[2.7.1]: https://github.com/stack-of-tasks/pinocchio/compare/v2.7.0...v2.7.1
+[2.7.0]: https://github.com/stack-of-tasks/pinocchio/compare/v2.6.21...v2.7.0
 [2.6.21]: https://github.com/stack-of-tasks/pinocchio/compare/v2.6.20...v2.6.21
 [2.6.20]: https://github.com/stack-of-tasks/pinocchio/compare/v2.6.19...v2.6.20
 [2.6.19]: https://github.com/stack-of-tasks/pinocchio/compare/v2.6.18...v2.6.19
