@@ -521,26 +521,39 @@ macro(_SETUP_PROJECT_DOCUMENTATION)
     if(MSVC)
       # FIXME: it is impossible to trigger documentation installation at
       # install, so put the target in ALL instead.
+      if(NOT TARGET doc)
+        add_custom_target(doc ALL COMMENT "Generating Doxygen documentation")
+      endif()
       add_custom_target(
-        doc ALL
+        ${PROJECT_NAME}-doc
         COMMAND ${DOXYGEN_EXECUTABLE} ${JRL_CMAKEMODULE_DOXYFILE_PATH}
         WORKING_DIRECTORY doc
         COMMENT "Generating Doxygen documentation")
     else(MSVC)
+      if(NOT TARGET doc)
+        add_custom_target(doc COMMENT "Generating Doxygen documentation")
+      endif()
+
       add_custom_target(
-        doc
+        ${PROJECT_NAME}-doc
         COMMAND ${DOXYGEN_EXECUTABLE} ${JRL_CMAKEMODULE_DOXYFILE_PATH}
         WORKING_DIRECTORY doc
         COMMENT "Generating Doxygen documentation")
 
       if(INSTALL_DOCUMENTATION)
-        install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_MAKE_PROGRAM} doc)")
+        install(
+          CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_MAKE_PROGRAM} ${PROJECT_NAME}-doc)"
+        )
       endif(INSTALL_DOCUMENTATION)
     endif(MSVC)
+    add_dependencies(doc ${PROJECT_NAME}-doc)
 
     if(DOXYGEN_USE_TEMPLATE_CSS)
+      if(NOT TARGET generate-template-css)
+        add_custom_target(generate-template-css)
+      endif()
       add_custom_target(
-        generate-template-css
+        ${PROJECT_NAME}-generate-template-css
         COMMAND
           ${DOXYGEN_EXECUTABLE} -w html ${PROJECT_BINARY_DIR}/doc/header.html
           ${PROJECT_BINARY_DIR}/doc/footer.html
@@ -548,7 +561,10 @@ macro(_SETUP_PROJECT_DOCUMENTATION)
         BYPRODUCTS ${PROJECT_BINARY_DIR}/doc/header.html
                    ${PROJECT_BINARY_DIR}/doc/footer.html
                    ${PROJECT_BINARY_DIR}/doc/doxygen.css)
-      add_dependencies(doc generate-template-css)
+      add_dependencies(generate-template-css
+                       ${PROJECT_NAME}-generate-template-css)
+      add_dependencies(${PROJECT_NAME}-doc
+                       ${PROJECT_NAME}-generate-template-css)
       _set_if_undefined(DOXYGEN_HTML_HEADER
                         "${PROJECT_BINARY_DIR}/doc/header.html")
       _set_if_undefined(DOXYGEN_HTML_FOOTER
@@ -613,6 +629,21 @@ macro(_SETUP_PROJECT_DOCUMENTATION)
       DOXYGEN_USE_TEMPLATE_CSS)
   endif(NOT DOXYGEN_FOUND)
 endmacro(_SETUP_PROJECT_DOCUMENTATION)
+
+# REMOVE_DUPLICATES
+# -----------------
+#
+# Remove duplicate values from a space separated list
+function(REMOVE_DUPLICATES ARG_STR OUTPUT)
+  set(ARG_LIST ${ARG_STR})
+  separate_arguments(ARG_LIST)
+  list(REMOVE_DUPLICATES ARG_LIST)
+  string(REGEX REPLACE "([^\\]|^);" "\\1 " _TMP_STR "${ARG_LIST}")
+  string(REGEX REPLACE "[\\](.)" "\\1" _TMP_STR "${_TMP_STR}") # fixes escaping
+  set(${OUTPUT}
+      "${_TMP_STR}"
+      PARENT_SCOPE)
+endfunction()
 
 # _DOXYTAG_ENTRIES_FROM_CMAKE_DEPENDENCIES
 # ----------------------------------------
@@ -687,14 +718,17 @@ macro(_SETUP_PROJECT_DOCUMENTATION_FINALIZE)
           file(RELATIVE_PATH DEP_DOCDIR ${INSTALL_DOCDIR}
                ${${PREFIX}_DOXYGENDOCDIR})
 
-          set(DOXYGEN_TAGFILES_FROM_DEPENDENCIES
-              "${DOXYGEN_TAGFILES_FROM_DEPENDENCIES} \"${${PREFIX}_DOXYGENDOCDIR}/${LIBRARY_NAME}.doxytag\"=\"${DEP_DOCDIR}\""
+          set(_TAGFILES_FROM_DEPENDENCIES
+              "${_TAGFILES_FROM_DEPENDENCIES} \"${${PREFIX}_DOXYGENDOCDIR}/${LIBRARY_NAME}.doxytag = ${DEP_DOCDIR}\""
           )
         endif()
       endforeach()
       _doxytag_entries_from_cmake_dependencies(
-        "${_PACKAGE_CONFIG_DEPENDENCIES_PROJECTS}"
-        DOXYGEN_TAGFILES_FROM_DEPENDENCIES)
+        "${_PACKAGE_CONFIG_DEPENDENCIES_PROJECTS}" _TAGFILES_FROM_DEPENDENCIES)
+      if(_TAGFILES_FROM_DEPENDENCIES)
+        remove_duplicates(${_TAGFILES_FROM_DEPENDENCIES}
+                          DOXYGEN_TAGFILES_FROM_DEPENDENCIES)
+      endif()
     endif()
     _set_if_undefined(DOXYGEN_TAGFILES "${DOXYGEN_TAGFILES_FROM_DEPENDENCIES}")
 

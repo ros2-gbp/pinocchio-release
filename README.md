@@ -9,6 +9,7 @@
   <a href="https://anaconda.org/conda-forge/pinocchio"><img src="https://img.shields.io/conda/dn/conda-forge/pinocchio.svg" alt="Conda Downloads"/></a>
   <a href="https://anaconda.org/conda-forge/pinocchio"><img src="https://img.shields.io/conda/vn/conda-forge/pinocchio.svg" alt="Conda Version"/></a>
   <a href="https://badge.fury.io/py/pin"><img src="https://badge.fury.io/py/pin.svg" alt="PyPI version" height="20"></a>
+  <a href="https://badge.fury.io/py/pin"><img src="https://results.pre-commit.ci/badge/github/stack-of-tasks/pinocchio/master.svg" alt="pre-commit.ci status" height="20"></a>
   <br>
   <!--<a href="https://gitlab.laas.fr/stack-of-tasks/pinocchio"><img src="https://gitlab.laas.fr/stack-of-tasks/pinocchio/badges/master/pipeline.svg" alt="Pipeline Status"></a>-->
 
@@ -39,7 +40,8 @@ or via pip (currently only available on Linux):
 <strong> pip install pin </strong>
 </p>
 
-## Table of contents 
+
+## Table of contents
 
   - [Pinocchio main features](#pinocchio-main-features)
   - [Documentation](#documentation)
@@ -53,6 +55,38 @@ or via pip (currently only available on Linux):
   - [Credits](#credits)
   - [Open-source projects relying on Pinocchio](#open-source-projects-relying-on-pinocchio)
   - [Acknowledgments](#acknowledgments)
+
+## Introducing Pinocchio 3
+**Pinocchio3** is released for development under the branch [pinocchio3-preview](https://github.com/stack-of-tasks/pinocchio/tree/pinocchio3-preview) on the main github repository.
+With **Pinocchio3**, multiple new features are introduced in **Pinocchio**, such as:
+  - Sparse Solution of Constrained Dynamics (Published in Robotics: Science and Systems 2021)
+  - Constrained Dynamics Derivatives (In pre-publishing stages)
+  - Constraint Models for handling loop constraints.
+  - Full casadi support in python and C++
+  - Increased support of CppAD and CppADCodeGen
+  - New SDF parser.
+  - and much more...
+
+**Pinocchio** developers are highly encouraged to check out the new features. However, please keep in mind that this remains a **development** branch, and thus the API between 2.9.x and 2.9.{x+1} could change without backward compatibility.
+
+The new constrained dynamics algorithm can be cited by the following publication:
+
+```bibtex
+@inproceedings{carpentier:hal-03271811,
+  TITLE = {{Proximal and Sparse Resolution of Constrained Dynamic Equations}},
+  AUTHOR = {Carpentier, Justin and Budhiraja, Rohan and Mansard, Nicolas},
+  URL = {https://hal.inria.fr/hal-03271811},
+  BOOKTITLE = {{Robotics: Science and Systems 2021}},
+  ADDRESS = {Austin / Virtual, United States},
+  YEAR = {2021},
+  MONTH = Jul,
+  PDF = {https://hal.inria.fr/hal-03271811/file/rss-proximal-and-sparse.pdf},
+  HAL_ID = {hal-03271811},
+  HAL_VERSION = {v1},
+}
+
+```
+
 
 ## Pinocchio main features
 
@@ -140,9 +174,30 @@ If you only need the Python bindings of Pinocchio, you may prefer to install it 
 
 ### ROS
 
-**Pinocchio** is also deployed on ROS. You may follow its deployment status below. If you're interested in using Pinocchio on systems and/or with packages that integrate with the ROS ecosystem, we recommend the installation of Pinocchio via the binaries distributed via the ROS PPA. Here, you can install Pinocchio using `sudo apt install ros-$ROS_DISTRO-pinocchio`. This installs Pinocchio with HPP-FCL support and with Python bindings. You can then depend on Pinocchio in your `package.xml` config (`<depend>pinocchio</depend>`) and include it via CMake (`find_package(pinocchio REQUIRED)`) -- we include support and hooks to discover the package for both ROS1 and ROS2. An example can be found [here](https://github.com/wxmerkt/pinocchio_ros_example). Please note that we always advise including the `pinocchio/fwd.hpp` header as the first include to avoid compilation errors from differing Boost-variant sizes.
+**Pinocchio** is also deployed on ROS.
+You may follow its deployment status below.
 
-| ROS1        |                                                                                                                                                                            | &nbsp;&nbsp;&nbsp;&nbsp; | ROS2         |                                                                                                                                                                            |
+If you're interested in using Pinocchio on systems and/or with packages that integrate with the ROS ecosystem, we recommend the installation of Pinocchio via the binaries distributed via the ROS PPA.
+Here, you can install Pinocchio using:
+
+```
+sudo apt install ros-$ROS_DISTRO-pinocchio
+```
+
+This installs Pinocchio with HPP-FCL support and with Python bindings.
+You can then use Pinocchio in your ROS packages by:
+
+* Depending on Pinocchio in your `package.xml` config (`<depend>pinocchio</depend>`)
+* Including Pinocchio via CMake (`find_package(pinocchio REQUIRED)`) and linking against Pinocchio (`target_link_libraries(my_library pinocchio::pinocchio)`)
+
+We include support and hooks to discover the package for both ROS 1 and ROS 2.
+Examples can be found at the following repositories:
+* [ROS 1 example](https://github.com/wxmerkt/pinocchio_ros_example)
+* [ROS 2 example](https://github.com/sea-bass/pinocchio_ros_cpp_example)
+
+Please note that we always advise including the `pinocchio/fwd.hpp` header as the first include to avoid compilation errors from differing Boost-variant sizes.
+
+| ROS 1       |                                                                                                                                                                            | &nbsp;&nbsp;&nbsp;&nbsp; | ROS 2        |                                                                                                                                                                            |
 | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Melodic** | [![](https://build.ros.org/job/Mbin_uB64__pinocchio__ubuntu_bionic_amd64__binary/badge/icon)](https://build.ros.org/job/Mbin_uB64__pinocchio__ubuntu_bionic_amd64__binary) | &nbsp;&nbsp;&nbsp;&nbsp; | **Foxy**     | [![](https://build.ros2.org/job/Fbin_uF64__pinocchio__ubuntu_focal_amd64__binary/badge/icon)](https://build.ros2.org/job/Fbin_uF64__pinocchio__ubuntu_focal_amd64__binary) |
 | **Noetic**  | [![](https://build.ros.org/job/Nbin_uF64__pinocchio__ubuntu_focal_amd64__binary/badge/icon)](https://build.ros.org/job/Nbin_uF64__pinocchio__ubuntu_focal_amd64__binary)   | &nbsp;&nbsp;&nbsp;&nbsp; | **Galactic** | [![](https://build.ros2.org/job/Gbin_uF64__pinocchio__ubuntu_focal_amd64__binary/badge/icon)](https://build.ros2.org/job/Gbin_uF64__pinocchio__ubuntu_focal_amd64__binary) |
@@ -220,7 +275,8 @@ The following people have been involved in the development of **Pinocchio** and 
 -   [Shubham Singh](https://github.com/shubhamsingh91) (UT Austin): second-order inverse dynamics derivatives
 -   [Stéphane Caron](https://scaron.info) (Inria): core developper
 -   [Joris Vaillant](https://github.com/jorisv) (Inria): core developer and manager of the project
--   [Sebastian Castro](https://roboticseabass.com) (PickNik Robotics): MeshCat viewer features extension
+-   [Sebastian Castro](https://roboticseabass.com) (The AI Institute): MeshCat viewer features extension
+-   [Lev Kozlov](https://github.com/lvjonok): Kinetic and potential energy regressors
 
 If you have participated in the development of **Pinocchio**, please add your name and contribution to this list.
 
@@ -233,6 +289,7 @@ If you have participated in the development of **Pinocchio**, please add your na
 -   [ocs2](https://github.com/leggedrobotics/ocs2) A toolbox for Optimal Control for Switched Systems (OCS2)
 -   [TriFingerSimulation](https://github.com/open-dynamic-robot-initiative/trifinger_simulation) TriFinger Robot Simulation (a Robot to perform RL on manipulation).
 -   [Casadi_Kin_Dyn](https://github.com/ADVRHumanoids/casadi_kin_dyn) IIT Package for generation of symbolic (SX) expressions of robot kinematics and dynamics.
+-   [PyRoboPlan](https://github.com/sea-bass/pyroboplan) An educational Python library for manipulator motion planning, using the Pinocchio Python bindings.
 
 ## Acknowledgments
 
