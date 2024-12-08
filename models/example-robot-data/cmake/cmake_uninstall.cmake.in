@@ -14,13 +14,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # This files comes from the CMake FAQ: http://www.cmake.org/Wiki/CMake_FAQ
-cmake_policy(SET CMP0007 NEW)
 IF(NOT EXISTS "@CMAKE_CURRENT_BINARY_DIR@/install_manifest.txt")
-  MESSAGE(FATAL_ERROR "Cannot find install manifest:\"@CMAKE_CURRENT_BINARY_DIR@/install_manifest.txt\"")
+  RETURN()
 ENDIF(NOT EXISTS "@CMAKE_CURRENT_BINARY_DIR@/install_manifest.txt")
 
 MESSAGE(STATUS "catkin path: @CMAKE_INSTALL_PREFIX@/.catkin")
-IF(EXISTS "@CMAKE_INSTALL_PREFIX@/.catkin")
+IF(EXISTS "@CMAKE_INSTALL_PREFIX@/.catkin" AND PACKAGE_CREATES_DOT_CATKIN)
   MESSAGE(STATUS "Try to remove @CMAKE_INSTALL_PREFIX@/.catkin")
   EXECUTE_PROCESS(
       COMMAND @CMAKE_COMMAND@ -E remove "@CMAKE_INSTALL_PREFIX@/.catkin"
@@ -28,9 +27,11 @@ IF(EXISTS "@CMAKE_INSTALL_PREFIX@/.catkin")
       OUTPUT_VARIABLE rm_out
       ERROR_VARIABLE rm_err
        )
-ENDIF(EXISTS "@CMAKE_INSTALL_PREFIX@/.catkin")
+ENDIF()
 
-
+IF(EXISTS "@CMAKE_CURRRENT_BINARY_DIR@/install_manifest.txt")
+  return()
+ENDIF()
 FILE(READ "@CMAKE_CURRENT_BINARY_DIR@/install_manifest.txt" files)
 STRING(REGEX REPLACE "\n" ";" files "${files}")
 LIST(REMOVE_ITEM files "")
