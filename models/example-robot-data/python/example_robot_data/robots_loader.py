@@ -5,35 +5,35 @@ import numpy as np
 import pinocchio as pin
 from pinocchio.robot_wrapper import RobotWrapper
 
-pin.switchToNumpyArray()
+try:
+    from .path import EXAMPLE_ROBOT_DATA_MODEL_DIR, EXAMPLE_ROBOT_DATA_SOURCE_DIR
+except ImportError:
+    pass
 
 
-def getModelPath(subpath, printmsg=False):
+def getModelPath(subpath, verbose=False):
     source = dirname(dirname(dirname(__file__)))  # top level source directory
     paths = [
-        join(
-            dirname(dirname(dirname(source))), "robots"
-        ),  # function called from "make release" in build/ dir
-        join(
-            dirname(source), "robots"
-        ),  # function called from a build/ dir inside top level source
-        join(source, "robots"),  # function called from top level source dir
+        # function called from "make release" in build/ dir
+        join(dirname(dirname(dirname(source))), "robots"),
+        # function called from a build/ dir inside top level source
+        join(dirname(source), "robots"),
+        # function called from top level source dir
+        join(source, "robots"),
     ]
     try:
-        from .path import EXAMPLE_ROBOT_DATA_MODEL_DIR, EXAMPLE_ROBOT_DATA_SOURCE_DIR
+        EXAMPLE_ROBOT_DATA_MODEL_DIR
 
-        paths.append(
-            EXAMPLE_ROBOT_DATA_MODEL_DIR
-        )  # function called from installed project
-        paths.append(
-            EXAMPLE_ROBOT_DATA_SOURCE_DIR
-        )  # function called from off-tree build dir
-    except ImportError:
+        # function called from installed project
+        paths.append(EXAMPLE_ROBOT_DATA_MODEL_DIR)
+        # function called from off-tree build dir
+        paths.append(EXAMPLE_ROBOT_DATA_SOURCE_DIR)
+    except NameError:
         pass
     paths += [join(p, "../../../share/example-robot-data/robots") for p in sys.path]
     for path in paths:
         if exists(join(path, subpath.strip("/"))):
-            if printmsg:
+            if verbose:
                 print("using %s as modelPath" % path)
             return path
     raise IOError("%s not found" % subpath)
@@ -72,10 +72,10 @@ class RobotLoader(object):
     ref_posture = "half_sitting"
     has_rotor_parameters = False
     free_flyer = False
-    verbose = False
     model_path = None
 
-    def __init__(self):
+    def __init__(self, verbose=False):
+        self.verbose = verbose
         if self.urdf_filename:
             if self.sdf_filename:
                 raise AttributeError("Please choose between URDF *or* SDF")
@@ -100,9 +100,9 @@ class RobotLoader(object):
                     self.robot = builder(
                         self.df_path,
                         package_dirs=[join(self.model_path, "../..")],
-                        root_joint=pin.JointModelFreeFlyer()
-                        if self.free_flyer
-                        else None,
+                        root_joint=(
+                            pin.JointModelFreeFlyer() if self.free_flyer else None
+                        ),
                         root_link_name=self.sdf_root_link_name,
                         parent_guidance=self.sdf_parent_guidance,
                     )
@@ -110,9 +110,9 @@ class RobotLoader(object):
                     self.robot = builder(
                         self.df_path,
                         package_dirs=[join(self.model_path, "../..")],
-                        root_joint=pin.JointModelFreeFlyer()
-                        if self.free_flyer
-                        else None,
+                        root_joint=(
+                            pin.JointModelFreeFlyer() if self.free_flyer else None
+                        ),
                     )
             except AttributeError:
                 raise ImportError("Building SDF models require pinocchio >= 3.0.0")
@@ -143,6 +143,8 @@ class RobotLoader(object):
         else:
             self.srdf_path = None
             self.robot.q0 = pin.neutral(self.robot.model)
+        root = getModelPath(self.path)
+        self.robot.urdf = join(root, self.path, self.urdf_subpath, self.urdf_filename)
 
         if self.free_flyer:
             self.addFreeFlyerJointLimits()
@@ -156,6 +158,24 @@ class RobotLoader(object):
         self.robot.model.lowerPositionLimit = lb
 
 
+class B1Loader(RobotLoader):
+    path = "b1_description"
+    urdf_filename = "b1.urdf"
+    urdf_subpath = "urdf"
+    srdf_filename = "b1.srdf"
+    ref_posture = "standing"
+    free_flyer = True
+
+
+class Go1Loader(RobotLoader):
+    path = "go1_description"
+    urdf_filename = "go1.urdf"
+    urdf_subpath = "urdf"
+    srdf_filename = "go1.srdf"
+    ref_posture = "standing"
+    free_flyer = True
+
+
 class A1Loader(RobotLoader):
     path = "a1_description"
     urdf_filename = "a1.urdf"
@@ -165,8 +185,31 @@ class A1Loader(RobotLoader):
     free_flyer = True
 
 
+class Z1Loader(RobotLoader):
+    path = "z1_description"
+    urdf_filename = "z1.urdf"
+    urdf_subpath = "urdf"
+    srdf_filename = "z1.srdf"
+    ref_posture = "arm_up"
+
+
+class B1Z1Loader(B1Loader):
+    urdf_filename = "b1-z1.urdf"
+    srdf_filename = "b1-z1.srdf"
+    ref_posture = "standing_with_arm_home"
+
+
 class ANYmalLoader(RobotLoader):
     path = "anymal_b_simple_description"
+    urdf_filename = "anymal.urdf"
+    srdf_filename = "anymal.srdf"
+    ref_posture = "standing"
+    free_flyer = True
+
+
+class ANYmalCLoader(RobotLoader):
+    path = "anymal_c_simple_description"
+    urdf_subpath = "urdf"
     urdf_filename = "anymal.urdf"
     srdf_filename = "anymal.srdf"
     ref_posture = "standing"
@@ -251,8 +294,8 @@ class TalosArmLoader(TalosLoader):
 
 
 class TalosLegsLoader(TalosLoader):
-    def __init__(self):
-        super(TalosLegsLoader, self).__init__()
+    def __init__(self, verbose=False):
+        super(TalosLegsLoader, self).__init__(verbose=verbose)
         legMaxId = 14
         m1 = self.robot.model
         m2 = pin.Model()
@@ -333,6 +376,16 @@ class BoltLoader(RobotLoader):
     free_flyer = True
 
 
+class BorinotLoader(RobotLoader):
+    path = "borinot_description"
+    urdf_subpath = "urdf"
+    srdf_subpath = "srdf"
+    urdf_filename = "borinot_flying_arm_2.urdf"
+    srdf_filename = "borinot_flying_arm_2.srdf"
+    ref_posture = "home"
+    free_flyer = True
+
+
 class Solo8Loader(RobotLoader):
     path = "solo_description"
     urdf_filename = "solo.urdf"
@@ -388,6 +441,20 @@ class PandaLoader(RobotLoader):
     path = "panda_description"
     urdf_filename = "panda.urdf"
     urdf_subpath = "urdf"
+    srdf_filename = "panda.srdf"
+    ref_posture = "default"
+
+
+class AllegroRightHandLoader(RobotLoader):
+    path = "allegro_hand_description"
+    urdf_filename = "allegro_right_hand.urdf"
+    urdf_subpath = "urdf"
+
+
+class AllegroLeftHandLoader(RobotLoader):
+    path = "allegro_hand_description"
+    urdf_filename = "allegro_left_hand.urdf"
+    urdf_subpath = "urdf"
 
 
 class UR3Loader(RobotLoader):
@@ -434,6 +501,16 @@ class HectorLoader(RobotLoader):
     free_flyer = True
 
 
+class HextiltLoader(RobotLoader):
+    path = "hextilt_description"
+    urdf_subpath = "urdf"
+    srdf_subpath = "srdf"
+    urdf_filename = "hextilt_flying_arm_5.urdf"
+    srdf_filename = "hextilt_flying_arm_5.srdf"
+    ref_posture = "home"
+    free_flyer = True
+
+
 class DoublePendulumLoader(RobotLoader):
     path = "double_pendulum_description"
     urdf_filename = "double_pendulum.urdf"
@@ -446,6 +523,13 @@ class DoublePendulumContinuousLoader(DoublePendulumLoader):
 
 class DoublePendulumSimpleLoader(DoublePendulumLoader):
     urdf_filename = "double_pendulum_simple.urdf"
+
+
+class QuadrupedLoader(RobotLoader):
+    path = "quadruped_description"
+    urdf_subpath = "urdf"
+    urdf_filename = "quadruped.urdf"
+    free_flyer = True
 
 
 class RomeoLoader(RobotLoader):
@@ -475,8 +559,13 @@ class IrisLoader(RobotLoader):
 
 
 ROBOTS = {
+    "b1": B1Loader,
+    "go1": Go1Loader,
     "a1": A1Loader,
+    "z1": Z1Loader,
+    "b1_z1": B1Z1Loader,
     "anymal": ANYmalLoader,
+    "anymal_c": ANYmalCLoader,
     "anymal_kinova": ANYmalKinovaLoader,
     "asr_twodof": AsrTwoDofLoader,
     "baxter": BaxterLoader,
@@ -485,6 +574,7 @@ ROBOTS = {
     "double_pendulum_continuous": DoublePendulumContinuousLoader,
     "double_pendulum_simple": DoublePendulumSimpleLoader,
     "hector": HectorLoader,
+    "hextilt": HextiltLoader,
     "hyq": HyQLoader,
     "icub": ICubLoader,
     "icub_reduced": ICubReducedLoader,
@@ -492,10 +582,14 @@ ROBOTS = {
     "kinova": KinovaLoader,
     "laikago": LaikagoLoader,
     "panda": PandaLoader,
+    "allegro_right_hand": AllegroRightHandLoader,
+    "allegro_left_hand": AllegroLeftHandLoader,
+    "quadruped": QuadrupedLoader,
     "romeo": RomeoLoader,
     "simple_humanoid": SimpleHumanoidLoader,
     "simple_humanoid_classical": SimpleHumanoidClassicalLoader,
     "bolt": BoltLoader,
+    "borinot": BorinotLoader,
     "solo8": Solo8Loader,
     "solo12": Solo12Loader,
     "finger_edu": FingerEduLoader,
@@ -519,14 +613,14 @@ ROBOTS = {
 }
 
 
-def loader(name, display=False, rootNodeName=""):
-    """Load a robot by its name, and optionnaly display it in a viewer."""
+def loader(name, display=False, rootNodeName="", verbose=False):
+    """Load a robot by its name, and optionally display it in a viewer."""
     if name not in ROBOTS:
         robots = ", ".join(sorted(ROBOTS.keys()))
         raise ValueError(
             "Robot '%s' not found. Possible values are %s" % (name, robots)
         )
-    inst = ROBOTS[name]()
+    inst = ROBOTS[name](verbose=verbose)
     if display:
         if rootNodeName:
             inst.robot.initViewer()
@@ -537,13 +631,13 @@ def loader(name, display=False, rootNodeName=""):
     return inst
 
 
-def load(name, display=False, rootNodeName=""):
+def load(name, display=False, rootNodeName="", verbose=False):
     """Load a robot by its name, and optionnaly display it in a viewer."""
-    return loader(name, display, rootNodeName).robot
+    return loader(name, display, rootNodeName, verbose).robot
 
 
-def load_full(name, display=False, rootNodeName=""):
+def load_full(name, display=False, rootNodeName="", verbose=False):
     """Load a robot by its name, optionnaly display it in a viewer,
     and provide its q0 and paths."""
-    inst = loader(name, display, rootNodeName)
+    inst = loader(name, display, rootNodeName, verbose)
     return inst.robot, inst.robot.q0, inst.df_path, inst.srdf_path
