@@ -1,0 +1,24 @@
+From ecab420908e9c75d81c3589f2c355dd5c8b7de44 Mon Sep 17 00:00:00 2001
+From: Wolfgang Merkt <w.merkt@gmail.com>
+Date: Sat, 13 Aug 2022 15:01:41 +0100
+Subject: [PATCH 2/3] Patch: Use PYTHON_STANDARD_LAYOUT
+
+---
+ CMakeLists.txt | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 904fcc0..bcb7ddb 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -28,6 +28,7 @@
+ # Need to be set before including base.cmake
+ # ----------------------------------------------------
+ option(INSTALL_DOCUMENTATION "Generate and install the documentation" OFF)
++option(PYTHON_STANDARD_LAYOUT "Enable standard Python package layout" ON)
+ 
+ # Check if the submodule cmake have been initialized
+ set(JRL_CMAKE_MODULES "${CMAKE_CURRENT_LIST_DIR}/cmake")
+-- 
+2.43.0
+
