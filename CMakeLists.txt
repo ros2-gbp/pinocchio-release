@@ -23,11 +23,20 @@ set(PROJECT_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR})
 set(CXX_DISABLE_WERROR True)
 set(CMAKE_VERBOSE_MAKEFILE True)
 
+# Set clang as compiler
+if(NOT CMAKE_CXX_COMPILER)
+  set(CMAKE_CXX_COMPILER clang++)
+endif()
+if(NOT CMAKE_C_COMPILER)
+  set(CMAKE_C_COMPILER clang)
+endif()
+
 # ----------------------------------------------------
 # --- OPTIONS  ---------------------------------------
 # Need to be set before including base.cmake
 # ----------------------------------------------------
 option(INSTALL_DOCUMENTATION "Generate and install the documentation" OFF)
+option(PYTHON_STANDARD_LAYOUT "Enable standard Python package layout" ON)
 
 # Check if the submodule cmake have been initialized
 set(JRL_CMAKE_MODULES "${CMAKE_CURRENT_LIST_DIR}/cmake")
@@ -63,8 +72,10 @@ set(DOXYGEN_USE_TEMPLATE_CSS YES)
 
 # Use BoostConfig module distributed by boost library instead of using FindBoost module distributed
 # by CMake
-if(POLICY CMP0167)
-  cmake_policy(SET CMP0167 NEW)
+if(NOT WIN32 OR NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+  if(POLICY CMP0167)
+    cmake_policy(SET CMP0167 NEW)
+  endif()
 endif()
 include("${JRL_CMAKE_MODULES}/base.cmake")
 
@@ -117,7 +128,7 @@ option(BUILD_ADVANCED_TESTING "Build the advanced tests (multiprecision, etc.) o
 option(BUILD_WITH_URDF_SUPPORT "Build the library with the URDF format support" ON)
 option(BUILD_WITH_SDF_SUPPORT "Build the library with the SDF format support" OFF)
 option(BUILD_WITH_COLLISION_SUPPORT
-       "Build the library with the collision support (required HPP-FCL)" OFF)
+       "Build the library with the collision support (required HPP-FCL)" ON)
 option(BUILD_WITH_AUTODIFF_SUPPORT
        "Build the library with the automatic differentiation support (via CppAD)" OFF)
 option(BUILD_WITH_CASADI_SUPPORT "Build the library with the support of CASADI" OFF)
