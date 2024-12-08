@@ -8,7 +8,7 @@ Subject: [PATCH 2/3] Patch: Use PYTHON_STANDARD_LAYOUT
  1 file changed, 1 insertion(+)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index cd0c8a76d..b12bc44fc 100644
+index cd0c8a7..b12bc44 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -36,6 +36,7 @@ endif()
