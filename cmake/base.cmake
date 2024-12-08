@@ -115,6 +115,26 @@
 # https://cmake.org/cmake/help/latest/module/CMakePackageConfigHelpers.html#generating-a-package-version-file
 # for further details.
 #
+# .. variable:: PROJECT_AUTO_RUN_FINALIZE
+#
+# If set, to true or unset SETUP_PROJECT_FINALIZE run automatically at the end
+# of the root CMakeLists.txt. If set to false, SETUP_PROJECT_FINALIZE must be
+# called manually. This is helpful when creating a CMake workspace where the
+# root CMakelists.txt don't belong to a project.
+#
+# .. variable:: PROJECT_PACKAGES_IN_WORKSPACE
+#
+# List of packages in the workspace. This must be defined in the root
+# CMakeLists. These packages will not be searched with find_package and all
+# target and variables defined in the module should be defined in a workspace
+# projects.
+#
+# .. variable:: PROJECT_PYTHON_PACKAGES_IN_WORKSPACE
+#
+# List of paths to Python package in the workspace. This must be defined in the
+# root CMakeLists.txt. Python package should be generated in a workspace
+# projects.
+#
 # Macros
 # ------
 #
@@ -122,17 +142,17 @@
 if(CMAKE_MINIMUM_REQUIRED_VERSION VERSION_LESS 3.10)
   message(
     FATAL_ERROR
-      "JRL-CMakemodules require CMake >= 3.10. Please update your main 'cmake_minimum_required'"
+    "JRL-CMakemodules require CMake >= 3.10. Please update your main 'cmake_minimum_required'"
   )
 endif()
 
-set(PROJECT_JRL_CMAKE_MODULE_DIR
-    ${CMAKE_CURRENT_LIST_DIR}
-    CACHE INTERNAL "")
+set(PROJECT_JRL_CMAKE_MODULE_DIR ${CMAKE_CURRENT_LIST_DIR} CACHE INTERNAL "")
 
-set(PROJECT_JRL_CMAKE_BINARY_DIR
-    ${CMAKE_CURRENT_BINARY_DIR}
-    CACHE INTERNAL "")
+set(PROJECT_JRL_CMAKE_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} CACHE INTERNAL "")
+
+if(NOT DEFINED PROJECT_AUTO_RUN_FINALIZE)
+  set(PROJECT_AUTO_RUN_FINALIZE TRUE)
+endif()
 
 # Please note that functions starting with an underscore are internal functions
 # and should not be used directly.
@@ -158,6 +178,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/cxx-standard.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/coverage.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/modernize-links.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/relpath.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/ros2.cmake)
 
 # --------- # Constants # --------- #
 
@@ -169,14 +190,16 @@ foreach(VARIABLE ${REQUIRED_VARIABLES})
   if(NOT DEFINED ${VARIABLE})
     message(
       AUTHOR_WARNING
-        "Required variable ``${VARIABLE}'' has not been defined, perhaps you are including cmake/base.cmake too early"
+      "Required variable ``${VARIABLE}'' has not been defined, perhaps you are including cmake/base.cmake too early"
     )
     message(
       AUTHOR_WARNING
-        "Check out https://jrl-cmakemodules.readthedocs.io/en/master/pages/base.html#minimal-working-example for an example"
+      "Check out https://jrl-cmakemodules.readthedocs.io/en/master/pages/base.html#minimal-working-example for an example"
     )
     message(
-      FATAL_ERROR "Required variable ``${VARIABLE}'' has not been defined.")
+      FATAL_ERROR
+      "Required variable ``${VARIABLE}'' has not been defined."
+    )
   endif(NOT DEFINED ${VARIABLE})
 endforeach(VARIABLE)
 
@@ -186,11 +209,14 @@ message(STATUS "Configuring \"${PROJECT_NAME}\" (${PROJECT_URL})")
 if(NOT DEFINED PROJECT_VERSION)
   version_compute()
 else()
-  if(NOT DEFINED PROJECT_VERSION_MAJOR
-     AND NOT DEFINED PROJECT_VERSION_MINOR
-     AND NOT DEFINED PROJECT_VERSION_PATCH)
+  if(
+    NOT DEFINED PROJECT_VERSION_MAJOR
+    AND NOT DEFINED PROJECT_VERSION_MINOR
+    AND NOT DEFINED PROJECT_VERSION_PATCH
+  )
     split_version_number(${PROJECT_VERSION} PROJECT_VERSION_MAJOR
-                         PROJECT_VERSION_MINOR PROJECT_VERSION_PATCH)
+                         PROJECT_VERSION_MINOR PROJECT_VERSION_PATCH
+    )
   endif()
 endif()
 set(SAVED_PROJECT_VERSION "${PROJECT_VERSION}")
@@ -202,36 +228,42 @@ if(PROJECT_VERSION MATCHES UNKNOWN)
   set(PROJECT_VERSION_FULL "")
 else(PROJECT_VERSION MATCHES UNKNOWN)
   if(PROJECT_VERSION_PATCH)
-    set(PROJECT_VERSION_FULL
-        "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}"
+    set(
+      PROJECT_VERSION_FULL
+      "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}"
     )
   else(PROJECT_VERSION_PATCH)
-    set(PROJECT_VERSION_FULL
-        "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
+    set(
+      PROJECT_VERSION_FULL
+      "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
+    )
   endif(PROJECT_VERSION_PATCH)
 endif(PROJECT_VERSION MATCHES UNKNOWN)
 
 # Set a script to run after project called
-set(CMAKE_PROJECT_${PROJECT_NAME}_INCLUDE
-    "${CMAKE_CURRENT_LIST_DIR}/post-project.cmake")
+set(
+  CMAKE_PROJECT_${PROJECT_NAME}_INCLUDE
+  "${CMAKE_CURRENT_LIST_DIR}/post-project.cmake"
+)
 
 # Set a hook to finalize the setup, CMake will set CMAKE_CURRENT_LIST_DIR to ""
 # at the end Based off
 # https://stackoverflow.com/questions/15760580/execute-command-or-macro-in-cmake-as-the-last-step-before-the-configure-step-f
-variable_watch(CMAKE_CURRENT_LIST_DIR SETUP_PROJECT_FINALIZE_HOOK)
-function(SETUP_PROJECT_FINALIZE_HOOK VARIABLE ACCESS)
-  if("${${VARIABLE}}" STREQUAL "")
-    set(CMAKE_CURRENT_LIST_DIR ${PROJECT_JRL_CMAKE_MODULE_DIR})
-    set(JRL_CMAKEMODULE_LOGGING_FILENAME
-        "${PROJECT_JRL_CMAKE_BINARY_DIR}/config.log")
-    setup_project_finalize()
-    if(PROJECT_USE_CMAKE_EXPORT)
-      setup_project_package_finalize()
+if(PROJECT_AUTO_RUN_FINALIZE)
+  variable_watch(CMAKE_CURRENT_LIST_DIR SETUP_PROJECT_FINALIZE_HOOK)
+  function(SETUP_PROJECT_FINALIZE_HOOK VARIABLE ACCESS)
+    if("${${VARIABLE}}" STREQUAL "")
+      set(CMAKE_CURRENT_LIST_DIR ${PROJECT_JRL_CMAKE_MODULE_DIR})
+      set(
+        JRL_CMAKEMODULE_LOGGING_FILENAME
+        "${PROJECT_JRL_CMAKE_BINARY_DIR}/config.log"
+      )
+      setup_project_finalize()
+      set(CMAKE_CURRENT_LIST_DIR "") # restore value
+      set(JRL_CMAKEMODULE_LOGGING_FILENAME "") # restore value
     endif()
-    set(CMAKE_CURRENT_LIST_DIR "") # restore value
-    set(JRL_CMAKEMODULE_LOGGING_FILENAME "") # restore value
-  endif()
-endfunction()
+  endfunction()
+endif()
 
 # --------------------- # Project configuration # --------------------- #
 
@@ -251,10 +283,7 @@ macro(_ADD_TO_LIST LIST VALUE SEPARATOR)
       set(${LIST} "${${LIST}}${SEPARATOR} ${VALUE}")
     endif(NOT "${VALUE}" STREQUAL "")
   endif("${${LIST}}" STREQUAL "")
-endmacro(
-  _ADD_TO_LIST
-  LIST
-  VALUE)
+endmacro(_ADD_TO_LIST LIST VALUE)
 
 # _ADD_TO_LIST_IF_NOT_PRESENT LIST VALUE
 # -----------------------
@@ -268,10 +297,7 @@ macro(_ADD_TO_LIST_IF_NOT_PRESENT LIST VALUE)
   if(NOT "${VALUE}" IN_LIST ${LIST})
     list(APPEND ${LIST} "${VALUE}")
   endif()
-endmacro(
-  _ADD_TO_LIST_IF_NOT_PRESENT
-  LIST
-  VALUE)
+endmacro(_ADD_TO_LIST_IF_NOT_PRESENT LIST VALUE)
 
 # _CONCATENATE_ARGUMENTS
 # ----------------------
@@ -330,8 +356,12 @@ macro(SETUP_PROJECT_FINALIZE)
   _setup_debian()
   # Install data if needed
   _install_project_data()
+  _install_project_ros2_ament_files()
 
   logging_finalize()
+  if(PROJECT_USE_CMAKE_EXPORT)
+    setup_project_package_finalize()
+  endif()
 endmacro(SETUP_PROJECT_FINALIZE)
 
 # .rst: .. ifmode:: user
@@ -352,9 +382,15 @@ macro(COMPUTE_PROJECT_ARGS _project_VARIABLE)
     set(_project_LANGUAGES "CXX")
   endif()
 
-  set(${_project_VARIABLE}
-      VERSION ${PROJECT_VERSION_FULL} LANGUAGES ${_project_LANGUAGES}
-      DESCRIPTION ${PROJECT_DESCRIPTION})
+  set(
+    ${_project_VARIABLE}
+    VERSION
+    ${PROJECT_VERSION_FULL}
+    LANGUAGES
+    ${_project_LANGUAGES}
+    DESCRIPTION
+    ${PROJECT_DESCRIPTION}
+  )
 endmacro(COMPUTE_PROJECT_ARGS)
 
 # .rst: .. ifmode:: user
@@ -368,23 +404,37 @@ endmacro(COMPUTE_PROJECT_ARGS)
 macro(SET_DEFAULT_CMAKE_BUILD_TYPE build_type)
   string(TOLOWER "${build_type}" build_type_lower)
 
-  if(NOT "${build_type_lower}" MATCHES
-     "(debug)|(release)|(relwithdebinfo)|(minsizerel)")
+  if(
+    NOT
+      "${build_type_lower}"
+        MATCHES
+        "(debug)|(release)|(relwithdebinfo)|(minsizerel)"
+  )
     message(
       FATAL_ERROR
-        "${build_type} value does not match with Debug, Release, RelWithDebInfo or MinSizeRel"
+      "${build_type} value does not match with Debug, Release, RelWithDebInfo or MinSizeRel"
     )
   endif()
 
-  if(NOT CMAKE_BUILD_TYPE
-     AND NOT CMAKE_CONFIGURATION_TYPES
-     AND NOT DEFINED ENV{CMAKE_BUILD_TYPE})
-    set(CMAKE_BUILD_TYPE
-        ${build_type}
-        CACHE STRING "Choose the build type value." FORCE)
-    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release"
-                                                 "RelWithDebInfo" "MinSizeRel")
+  if(
+    NOT CMAKE_BUILD_TYPE
+    AND NOT CMAKE_CONFIGURATION_TYPES
+    AND NOT DEFINED ENV{CMAKE_BUILD_TYPE}
+  )
+    set(
+      CMAKE_BUILD_TYPE
+      ${build_type}
+      CACHE STRING
+      "Choose the build type value."
+      FORCE
+    )
+    set_property(
+      CACHE CMAKE_BUILD_TYPE
+      PROPERTY STRINGS "Debug" "Release" "RelWithDebInfo" "MinSizeRel"
+    )
     message(
-      STATUS "CMAKE_BUILD_TYPE has automatically been set to ${build_type}")
+      STATUS
+      "CMAKE_BUILD_TYPE has automatically been set to ${build_type}"
+    )
   endif()
 endmacro(SET_DEFAULT_CMAKE_BUILD_TYPE)
