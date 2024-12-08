@@ -1,0 +1,32 @@
+--- CMakeLists.txt.upstream	2024-12-08 19:59:45.635342233 +0100
++++ CMakeLists.txt	2024-12-08 19:59:54.382202980 +0100
+@@ -23,11 +23,20 @@
+ set(CXX_DISABLE_WERROR True)
+ set(CMAKE_VERBOSE_MAKEFILE True)
+ 
++# Set clang as compiler
++if(NOT CMAKE_CXX_COMPILER)
++  set(CMAKE_CXX_COMPILER clang++)
++endif()
++if(NOT CMAKE_C_COMPILER)
++  set(CMAKE_C_COMPILER clang)
++endif()
++
+ # ----------------------------------------------------
+ # --- OPTIONS  ---------------------------------------
+ # Need to be set before including base.cmake
+ # ----------------------------------------------------
+ option(INSTALL_DOCUMENTATION "Generate and install the documentation" OFF)
++option(PYTHON_STANDARD_LAYOUT "Enable standard Python package layout" ON)
+ 
+ # Check if the submodule cmake have been initialized
+ set(JRL_CMAKE_MODULES "${CMAKE_CURRENT_LIST_DIR}/cmake")
+@@ -119,7 +128,7 @@
+ option(BUILD_WITH_URDF_SUPPORT "Build the library with the URDF format support" ON)
+ option(BUILD_WITH_SDF_SUPPORT "Build the library with the SDF format support" OFF)
+ option(BUILD_WITH_COLLISION_SUPPORT
+-       "Build the library with the collision support (required HPP-FCL)" OFF)
++       "Build the library with the collision support (required HPP-FCL)" ON)
+ option(BUILD_WITH_AUTODIFF_SUPPORT
+        "Build the library with the automatic differentiation support (via CppAD)" OFF)
+ option(BUILD_WITH_CASADI_SUPPORT "Build the library with the support of CASADI" OFF)
