@@ -1,23 +1,30 @@
-from .. import pinocchio_pywrap as pin
-from ..shortcuts import buildModelsFromUrdf, createDatas
-
+import abc
 import time
-import numpy as np
-import os.path as osp
+from pathlib import Path
 
+import numpy as np
+
+from .. import pinocchio_pywrap_default as pin
+from ..shortcuts import createDatas
 
 try:
     import imageio
+
     IMAGEIO_SUPPORT = True
 except ImportError:
     IMAGEIO_SUPPORT = False
 
 
-class BaseVisualizer(object):
-    """Pinocchio visualizers are employed to easily display a model at a given configuration.
-    BaseVisualizer is not meant to be directly employed, but only to provide a uniform interface and a few common methods.
+class BaseVisualizer(abc.ABC):
+    """
+    Pinocchio visualizers are employed to easily display a model at a given
+    configuration.
+    BaseVisualizer is not meant to be directly employed, but only to provide a uniform
+    interface and a few common methods.
     New visualizers should extend this class and override its methods as neeeded.
     """
+
+    _video_writer = None
 
     _video_writer = None
 
@@ -31,8 +38,11 @@ class BaseVisualizer(object):
         collision_data=None,
         visual_data=None,
     ):
-        """Construct a display from the given model, collision model, and visual model.
-        If copy_models is True, the models are copied. Otherwise, they are simply kept as a reference."""
+        """
+        Construct a display from the given model, collision model, and visual model.
+        If copy_models is True, the models are copied. Otherwise, they are simply kept
+        as a reference.
+        """
 
         if copy_models:
             self.model = model.copy()
@@ -85,52 +95,57 @@ class BaseVisualizer(object):
         """Delete all the objects from the whole scene"""
         pass
 
+    @abc.abstractmethod
     def display(self, q=None):
-        """Display the robot at configuration q or refresh the rendering
-        from the current placements contained in data by placing all the bodies in the viewer."""
-        pass
+        """
+        Display the robot at configuration q or refresh the rendering
+        from the current placements contained in data by placing all the bodies in the
+        viewer.
+        """
 
+    @abc.abstractmethod
     def displayCollisions(self, visibility):
         """Set whether to display collision objects or not."""
-        pass
 
+    @abc.abstractmethod
     def displayVisuals(self, visibility):
         """Set whether to display visual objects or not."""
-        raise NotImplementedError()
 
-    def setBackgroundColor(self, *args, **kwargs):
+    @abc.abstractmethod
+    def setBackgroundColor(self):
         """Set the visualizer background color."""
-        raise NotImplementedError()
 
+    @abc.abstractmethod
     def setCameraTarget(self, target):
         """Set the camera target."""
-        raise NotImplementedError()
 
-    def setCameraPosition(self, position):
+    @abc.abstractmethod
+    def setCameraPosition(self, position: np.ndarray):
         """Set the camera's 3D position."""
-        raise NotImplementedError()
 
-    def setCameraZoom(self, zoom):
+    @abc.abstractmethod
+    def setCameraZoom(self, zoom: float):
         """Set camera zoom value."""
-        raise NotImplementedError()
 
-    def setCameraPose(self, pose=np.eye(4)):
+    @abc.abstractmethod
+    def setCameraPose(self, pose: np.ndarray = np.eye(4)):
         """Set camera 6D pose using a 4x4 matrix."""
-        raise NotImplementedError()
 
+    @abc.abstractmethod
     def captureImage(self, w=None, h=None):
         """Captures an image from the viewer and returns an RGB array."""
-        pass
 
+    @abc.abstractmethod
     def disableCameraControl(self):
-        raise NotImplementedError()
+        """Disable camera manual control"""
 
+    @abc.abstractmethod
     def enableCameraControl(self):
-        raise NotImplementedError()
+        """Enable camera manual control"""
 
+    @abc.abstractmethod
     def drawFrameVelocities(self, *args, **kwargs):
         """Draw current frame velocities."""
-        raise NotImplementedError()
 
     def sleep(self, dt):
         time.sleep(dt)
@@ -139,7 +154,10 @@ class BaseVisualizer(object):
         return self._video_writer is not None
 
     def play(self, q_trajectory, dt=None, callback=None, capture=False, **kwargs):
-        """Play a trajectory with given time step. Optionally capture RGB images and returns them."""
+        """
+        Play a trajectory with given time step. Optionally capture RGB images and
+        returns them.
+        """
         nsteps = len(q_trajectory)
         if not capture:
             capture = self.has_video_writer()
@@ -164,23 +182,29 @@ class BaseVisualizer(object):
             return imgs
 
     def create_video_ctx(self, filename=None, fps=30, directory=None, **kwargs):
-        """Create a video recording context, generating the output filename if necessary.
+        """
+        Create a video recording context, generating the output filename if necessary.
 
         Code inspired from https://github.com/petrikvladimir/RoboMeshCat.
         """
         if not IMAGEIO_SUPPORT:
-            import warnings, contextlib
-            warnings.warn("Video context cannot be created because imageio is not available.", UserWarning)
+            import contextlib
+            import warnings
+
+            warnings.warn(
+                "Video context cannot be created because imageio is not available.",
+                UserWarning,
+            )
             return contextlib.nullcontext()
         if filename is None:
             if directory is None:
                 from tempfile import gettempdir
 
                 directory = gettempdir()
+            directory = Path(directory)
             f_fmt = "%Y%m%d_%H%M%S"
             ext = "mp4"
-            filename = time.strftime("{}.{}".format(f_fmt, ext))
-            filename = osp.join(directory, filename)
+            filename = directory / time.strftime(f"{f_fmt}.{ext}")
         return VideoContext(self, fps, filename)
 
 
