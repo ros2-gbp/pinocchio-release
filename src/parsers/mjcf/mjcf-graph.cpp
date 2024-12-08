@@ -3,6 +3,8 @@
 //
 
 #include "pinocchio/parsers/mjcf/mjcf-graph.hpp"
+#include "pinocchio/multibody/model.hpp"
+#include "pinocchio/algorithm/contact-info.hpp"
 
 namespace pinocchio
 {
@@ -500,15 +502,29 @@ namespace pinocchio
         namespace fs = boost::filesystem;
         MjcfTexture text;
         auto file = el.get_optional<std::string>("<xmlattr>.file");
+        auto name_ = el.get_optional<std::string>("<xmlattr>.name");
+        auto type = el.get_optional<std::string>("<xmlattr>.type");
+
+        std::string name;
+        if (name_)
+          name = *name_;
+        else if (type && *type == "skybox")
+          name = *type;
         if (!file)
-          throw std::invalid_argument("Only textures with files are supported");
+        {
+          std::cout << "Warning - Only texture with files are supported" << std::endl;
+          if (name.empty())
+            throw std::invalid_argument("Textures need a name.");
+        }
+        else
+        {
+          fs::path filePath(*file);
+          name = getName(el, filePath);
 
-        fs::path filePath(*file);
-        std::string name = getName(el, filePath);
-
-        text.filePath =
-          updatePath(compilerInfo.strippath, compilerInfo.texturedir, modelPath, filePath).string();
-
+          text.filePath =
+            updatePath(compilerInfo.strippath, compilerInfo.texturedir, modelPath, filePath)
+              .string();
+        }
         auto str_v = el.get_optional<std::string>("<xmlattr>.type");
         if (str_v)
           text.textType = *str_v;
@@ -721,6 +737,53 @@ namespace pinocchio
         }
       }
 
+      void MjcfGraph::parseEquality(const ptree & el)
+      {
+        for (const ptree::value_type & v : el)
+        {
+          std::string type = v.first;
+          // List of supported constraints from mjcf description
+          // equality -> connect
+
+          // The constraints below are not supported and will be ignored with the following
+          // warning: joint, flex, distance, weld
+          if (type != "connect")
+          {
+            // TODO(jcarpent): support extra constraint types such as joint, flex, distance, weld.
+            continue;
+          }
+
+          MjcfEquality eq;
+          eq.type = type;
+
+          // get the name of first body
+          auto body1 = v.second.get_optional<std::string>("<xmlattr>.body1");
+          if (body1)
+            eq.body1 = *body1;
+          else
+            throw std::invalid_argument("Equality constraint needs a first body");
+
+          // get the name of second body
+          auto body2 = v.second.get_optional<std::string>("<xmlattr>.body2");
+          if (body2)
+            eq.body2 = *body2;
+
+          // get the name of the constraint (if it exists)
+          auto name = v.second.get_optional<std::string>("<xmlattr>.name");
+          if (name)
+            eq.name = *name;
+          else
+            eq.name = eq.body1 + "_" + eq.body2 + "_constraint";
+
+          // get the anchor position
+          auto anchor = v.second.get_optional<std::string>("<xmlattr>.anchor");
+          if (anchor)
+            eq.anchor = internal::getVectorFromStream<3>(*anchor);
+
+          mapOfEqualities.insert(std::make_pair(eq.name, eq));
+        }
+      }
+
       void MjcfGraph::parseGraph()
       {
         boost::property_tree::ptree el;
@@ -758,6 +821,11 @@ namespace pinocchio
             boost::optional<std::string> childClass;
             parseJointAndBody(el.get_child("worldbody").get_child("body"), childClass);
           }
+
+          if (v.first == "equality")
+          {
+            parseEquality(el.get_child("equality"));
+          }
         }
       }
 
@@ -785,15 +853,12 @@ namespace pinocchio
       {
 
         FrameIndex parentFrameId = 0;
-        Inertia inert = Inertia::Zero();
         if (!currentBody.bodyParent.empty())
-        {
           parentFrameId = urdfVisitor.getBodyId(currentBody.bodyParent);
-          inert = currentBody.bodyInertia;
-        }
+
         // get body pose in body parent
         const SE3 bodyPose = currentBody.bodyPlacement;
-
+        Inertia inert = currentBody.bodyInertia;
         SE3 jointInParent = bodyPose * joint.jointPlacement;
         bodyInJoint = joint.jointPlacement.inverse();
         UrdfVisitor::JointType jType;
@@ -1029,6 +1094,37 @@ namespace pinocchio
           throw std::invalid_argument("Keyframe size does not match model size");
       }
 
+      void MjcfGraph::parseContactInformation(
+        const Model & model,
+        PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(RigidConstraintModel) & contact_models)
+      {
+        for (const auto & entry : mapOfEqualities)
+        {
+          const MjcfEquality & eq = entry.second;
+
+          SE3 jointPlacement;
+          jointPlacement.setIdentity();
+          jointPlacement.translation() = eq.anchor;
+
+          // Get Joint Indices from the model
+          const JointIndex body1 = urdfVisitor.getParentId(eq.body1);
+
+          // when body2 is not specified, we link to the world
+          if (eq.body2 == "")
+          {
+            RigidConstraintModel rcm(CONTACT_3D, model, body1, jointPlacement, LOCAL);
+            contact_models.push_back(rcm);
+          }
+          else
+          {
+            const JointIndex body2 = urdfVisitor.getParentId(eq.body2);
+            RigidConstraintModel rcm(
+              CONTACT_3D, model, body1, jointPlacement, body2, jointPlacement.inverse(), LOCAL);
+            contact_models.push_back(rcm);
+          }
+        }
+      }
+
       void MjcfGraph::parseRootTree()
       {
         urdfVisitor.setName(modelName);
@@ -1036,7 +1132,8 @@ namespace pinocchio
         // get name and inertia of first root link
         std::string rootLinkName = bodiesList.at(0);
         MjcfBody rootBody = mapOfBodies.find(rootLinkName)->second;
-        urdfVisitor.addRootJoint(rootBody.bodyInertia, rootLinkName);
+        if (rootBody.jointChildren.size() == 0)
+          urdfVisitor.addRootJoint(rootBody.bodyInertia, rootLinkName);
 
         fillReferenceConfig(rootBody);
         for (const auto & entry : bodiesList)
