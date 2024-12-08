@@ -2,23 +2,22 @@
 # Copyright (c) 2015-2022 CNRS INRIA
 #
 
-from __future__ import print_function, division
 
 import sys
 
 import numpy as np
 import numpy.linalg as npl
 
-from . import pinocchio_pywrap as pin
-from .pinocchio_pywrap.rpy import matrixToRpy, rpyToMatrix, rotate
+from . import pinocchio_pywrap_default as pin
+from .pinocchio_pywrap_default.rpy import matrixToRpy, rotate, rpyToMatrix
 
-from .deprecation import deprecated
 
 def npToTTuple(M):
     L = M.tolist()
     for i in range(len(L)):
         L[i] = tuple(L[i])
     return tuple(L)
+
 
 def npToTuple(M):
     if len(M.shape) == 1:
@@ -29,31 +28,19 @@ def npToTuple(M):
         return tuple(M.T.tolist()[0])
     return npToTTuple(M)
 
+
 def eye(n):
     res = np.eye(n)
     return res
 
+
 def zero(n):
     return np.zeros(n)
+
 
 def rand(n):
     return np.random.rand(n) if isinstance(n, int) else np.random.rand(n[0], n[1])
 
-@deprecated("Please use numpy.cross(a, b) or numpy.cross(a, b, axis=0).")
-def cross(a, b):
-    return np.cross(a, b, axis=0)
-
-@deprecated('Now useless. You can directly have access to this function from the main scope of Pinocchio')
-def skew(p):
-    return pin.skew(p)
-
-@deprecated('Now useless. You can directly have access to this function from the main scope of Pinocchio')
-def se3ToXYZQUAT(M):
-    return pin.SE3ToXYZQUATtuple(M)
-
-@deprecated('Now useless. You can directly have access to this function from the main scope of Pinocchio')
-def XYZQUATToSe3(vec):
-    return pin.XYZQUATToSE3(vec)
 
 def isapprox(a, b, epsilon=1e-6):
     if "np" in a.__class__.__dict__:
@@ -67,10 +54,10 @@ def isapprox(a, b, epsilon=1e-6):
     return abs(a - b) < epsilon
 
 
-def mprint(M, name="ans",eps=1e-15):
-    '''
+def mprint(M, name="ans", eps=1e-15):
+    """
     Matlab-style pretty matrix print.
-    '''
+    """
     if isinstance(M, pin.SE3):
         M = M.homogeneous
     if len(M.shape) == 1:
@@ -80,10 +67,8 @@ def mprint(M, name="ans",eps=1e-15):
     print(name, " = ")
     print()
 
-    Mmin = lambda M: M.min()
-    Mmax = lambda M: M.max()
-    Mm = Mmin(abs(M[np.nonzero(M)]))
-    MM = Mmax(abs(M[np.nonzero(M)]))
+    Mm = (abs(M[np.nonzero(M)])).min()
+    MM = (abs(M[np.nonzero(M)])).max()
 
     fmt = "% 10.3e" if Mm < 1e-5 or MM > 1e6 or MM / Mm > 1e3 else "% 1.5f"
 
@@ -91,13 +76,15 @@ def mprint(M, name="ans",eps=1e-15):
         cmin = i * 6
         cmax = (i + 1) * 6
         cmax = ncol if ncol < cmax else cmax
-        print("Columns %s through %s" % (cmin, cmax - 1))
+        print(f"Columns {cmin} through {cmax - 1}")
         print()
         for r in range(M.shape[0]):
             sys.stdout.write("  ")
             for c in range(cmin, cmax):
-                if abs(M[r,c])>eps: sys.stdout.write(fmt % M[r,c]  + "   ")
-                else: sys.stdout.write(" 0"+" "*9)
+                if abs(M[r, c]) > eps:
+                    sys.stdout.write(fmt % M[r, c] + "   ")
+                else:
+                    sys.stdout.write(" 0" + " " * 9)
             print()
         print()
 
@@ -108,9 +95,18 @@ def fromListToVectorOfString(items):
     return vector
 
 
-__all__ = ['np', 'npl', 'eye', 'zero', 'rand', 'isapprox', 'mprint',
-           'skew', 'cross',
-           'npToTTuple', 'npToTuple', 'rotate',
-           'rpyToMatrix', 'matrixToRpy',
-           'se3ToXYZQUAT', 'XYZQUATToSe3',
-           'fromListToVectorOfString']
+__all__ = [
+    "np",
+    "npl",
+    "eye",
+    "zero",
+    "rand",
+    "isapprox",
+    "mprint",
+    "npToTTuple",
+    "npToTuple",
+    "rotate",
+    "rpyToMatrix",
+    "matrixToRpy",
+    "fromListToVectorOfString",
+]
