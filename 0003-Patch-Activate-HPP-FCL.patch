@@ -1,4 +1,4 @@
-From 75ccf8e97e96606fbcf330045d2d926e40ef278c Mon Sep 17 00:00:00 2001
+From c48ef03326d125ada3ffeedb98fe3b2d3e842e62 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Sat, 13 Aug 2022 15:01:52 +0100
 Subject: [PATCH 3/3] Patch: Activate HPP-FCL
@@ -8,10 +8,10 @@ Subject: [PATCH 3/3] Patch: Activate HPP-FCL
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index bcb7ddb..09448fd 100644
+index b12bc44..9a7ba5a 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -127,7 +119,7 @@
+@@ -126,7 +126,7 @@ option(BUILD_ADVANCED_TESTING "Build the advanced tests (multiprecision, etc.) o
  option(BUILD_WITH_URDF_SUPPORT "Build the library with the URDF format support" ON)
  option(BUILD_WITH_SDF_SUPPORT "Build the library with the SDF format support" OFF)
  option(BUILD_WITH_COLLISION_SUPPORT
@@ -21,5 +21,5 @@ index bcb7ddb..09448fd 100644
         "Build the library with the automatic differentiation support (via CppAD)" OFF)
  option(BUILD_WITH_CASADI_SUPPORT "Build the library with the support of CASADI" OFF)
 -- 
-2.43.0
+2.47.0
 
