@@ -14,13 +14,17 @@ namespace pinocchio
 {
   namespace python
   {
-    
+
     void exposeInertia()
     {
-      InertiaPythonVisitor<Inertia>::expose();
-      StdAlignedVectorPythonVisitor<Inertia>::expose("StdVec_Inertia");
-      serialize<StdAlignedVectorPythonVisitor<Inertia>::vector_type>();
+      InertiaPythonVisitor<context::Inertia>::expose();
+      PseudoInertiaPythonVisitor<context::PseudoInertia>::expose();
+      LogCholeskyParametersPythonVisitor<context::LogCholeskyParameters>::expose();
+      StdAlignedVectorPythonVisitor<context::Inertia>::expose("StdVec_Inertia");
+#ifndef PINOCCHIO_PYTHON_NO_SERIALIZATION
+      serialize<StdAlignedVectorPythonVisitor<context::Inertia>::vector_type>();
+#endif
     }
-    
+
   } // namespace python
 } // namespace pinocchio
