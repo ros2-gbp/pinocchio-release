@@ -8,7 +8,7 @@ Subject: [PATCH 3/3] Patch: Activate HPP-FCL
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index b12bc44fc..9a7ba5add 100644
+index b12bc44..9a7ba5a 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -126,7 +126,7 @@ option(BUILD_ADVANCED_TESTING "Build the advanced tests (multiprecision, etc.) o
