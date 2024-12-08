@@ -1,4 +1,4 @@
-From df94729eaeb10567f8a1c254698d1a1a7f709c45 Mon Sep 17 00:00:00 2001
+From fafea8c701cd2c211b723f4d68454b92f2d439dc Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Mon, 30 Jan 2023 06:54:32 +0000
 Subject: [PATCH 4/6] Remove -Wl,-s LDFLAGS
@@ -21,5 +21,5 @@ index 3bd7fa9..a7f8836 100755
  # Explicitly enable -DNDEBUG, see:
  # 	https://github.com/ros-infrastructure/bloom/issues/327
 -- 
-2.43.0
+2.47.0
 
