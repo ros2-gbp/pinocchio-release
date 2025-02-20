@@ -1,4 +1,4 @@
-# Copyright (C) 2008-2019 LAAS-CNRS, JRL AIST-CNRS, INRIA.
+# Copyright (C) 2008-2024 LAAS-CNRS, JRL AIST-CNRS, INRIA.
 #
 # This program is free software: you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -91,9 +91,11 @@ macro(_SETUP_PROJECT_HEADER)
 
   if(NOT PROJECT_GENERATED_HEADERS_SKIP_CONFIG)
     # Generate config.hh header.
-    generate_configuration_header(
-      ${HEADER_DIR} config.${PROJECT_CUSTOM_HEADER_EXTENSION}
-      ${PACKAGE_CPPNAME} ${PACKAGE_CPPNAME_LOWER}_EXPORTS
+    GENERATE_CONFIGURATION_HEADER(
+      ${HEADER_DIR}
+      config.${PROJECT_CUSTOM_HEADER_EXTENSION}
+      ${PACKAGE_CPPNAME}
+      ${PACKAGE_CPPNAME_LOWER}_EXPORTS
     )
   endif()
 
@@ -169,7 +171,7 @@ function(
   LIBRARY_NAME
   EXPORT_SYMBOL
 )
-  generate_configuration_header_v2(
+  GENERATE_CONFIGURATION_HEADER_V2(
     INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/include
     HEADER_DIR ${HEADER_DIR}
     FILENAME ${FILENAME}
@@ -271,28 +273,62 @@ endfunction(GENERATE_CONFIGURATION_HEADER_V2)
 macro(_SETUP_PROJECT_HEADER_FINALIZE)
   # If the header list is set, install it.
   if(DEFINED ${PROJECT_NAME}_HEADERS)
-    foreach(FILE ${${PROJECT_NAME}_HEADERS})
-      header_install(${FILE})
-    endforeach(FILE)
+    HEADER_INSTALL(${${PROJECT_NAME}_HEADERS})
   endif(DEFINED ${PROJECT_NAME}_HEADERS)
 endmacro(_SETUP_PROJECT_HEADER_FINALIZE)
 
 # .rst: .. ifmode:: internal
 #
-# .. command:: HEADER_INSTALL (FILES)
+# ~~~
+# .. command:: HEADER_INSTALL (COMPONENT <component> <files>...)
+# ~~~
 #
 # Install a list of headers.
 #
-macro(HEADER_INSTALL FILES)
+# :param component: Component to forward to install command.
+#
+# :param files: Files to install.
+macro(HEADER_INSTALL)
+  set(options)
+  set(oneValueArgs COMPONENT)
+  set(multiValueArgs)
+  cmake_parse_arguments(
+    ARGS
+    "${options}"
+    "${oneValueArgs}"
+    "${multiValueArgs}"
+    ${ARGN}
+  )
+
+  if(ARGS_COMPONENT)
+    set(_COMPONENT_NAME ${ARGS_COMPONENT})
+  else()
+    set(_COMPONENT_NAME ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})
+  endif()
+
+  set(FILES ${ARGS_UNPARSED_ARGUMENTS})
+
   foreach(FILE ${FILES})
     get_filename_component(DIR "${FILE}" PATH)
     string(REGEX REPLACE "${CMAKE_BINARY_DIR}" "" DIR "${DIR}")
     string(REGEX REPLACE "${PROJECT_SOURCE_DIR}" "" DIR "${DIR}")
     string(REGEX REPLACE "include(/|$)" "" DIR "${DIR}")
+    if(CMAKE_VERSION` VERSION_GREATER 3.20)
+      # workaround CMP0177
+      cmake_path(
+        SET
+        INSTALL_PATH
+        NORMALIZE
+        "${CMAKE_INSTALL_INCLUDEDIR}/${DIR}"
+      )
+    else()
+      set(INSTALL_PATH "${CMAKE_INSTALL_INCLUDEDIR}/${DIR}")
+    endif()
     install(
       FILES ${FILE}
-      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${DIR}"
+      DESTINATION ${INSTALL_PATH}
       PERMISSIONS OWNER_READ GROUP_READ WORLD_READ OWNER_WRITE
+      COMPONENT ${_COMPONENT_NAME}
     )
   endforeach()
 endmacro()
