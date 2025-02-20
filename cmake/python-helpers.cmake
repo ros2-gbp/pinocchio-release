@@ -13,25 +13,85 @@
 # You should have received a copy of the GNU General Public License along with
 # this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# .rst: .. command::  PYTHON_INSTALL(MODULE FILE DEST)
+# .rst:
+#
+# ~~~
+# .. command:: PYTHON_INSTALL(<module> <file> <dest> COMPONENT <component>)
+# ~~~
 #
 # Compile and install a Python file.
 #
+# :param module: Python module name.
+#
+# :param file: Python file name.
+#
+# :param file: Installation directory.
+#
+# :param component: Component to forward to install command.
 macro(PYTHON_INSTALL MODULE FILE DEST)
-  python_build("${MODULE}" "${FILE}")
+  set(options)
+  set(oneValueArgs COMPONENT)
+  set(multiValueArgs)
+  cmake_parse_arguments(
+    ARGS
+    "${options}"
+    "${oneValueArgs}"
+    "${multiValueArgs}"
+    ${ARGN}
+  )
+
+  if(ARGS_COMPONENT)
+    set(_COMPONENT_NAME ${ARGS_COMPONENT})
+  else()
+    set(_COMPONENT_NAME ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})
+  endif()
+
+  PYTHON_BUILD("${MODULE}" "${FILE}")
 
   install(
     FILES "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}/${FILE}"
     DESTINATION "${DEST}/${MODULE}"
+    COMPONENT ${_COMPONENT_NAME}
   )
 endmacro()
 
-# .rst: .. command:: PYTHON_INSTALL_ON_SITE (MODULE FILE)
+# .rst:
+#
+# ~~~
+# .. command:: PYTHON_INSTALL_ON_SITE (<module> <file> COMPONENT <component>)
+# ~~~
 #
 # Compile and install a Python file in :cmake:variable:`PYTHON_SITELIB`.
 #
+# :param module: Python module name.
+#
+# :param file: Python file name.
+#
+# :param component: Component to forward to install command.
 macro(PYTHON_INSTALL_ON_SITE MODULE FILE)
-  python_install("${MODULE}" "${FILE}" ${PYTHON_SITELIB})
+  set(options)
+  set(oneValueArgs COMPONENT)
+  set(multiValueArgs)
+  cmake_parse_arguments(
+    ARGS
+    "${options}"
+    "${oneValueArgs}"
+    "${multiValueArgs}"
+    ${ARGN}
+  )
+
+  if(ARGS_COMPONENT)
+    set(_COMPONENT_NAME ${ARGS_COMPONENT})
+  else()
+    set(_COMPONENT_NAME ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})
+  endif()
+
+  PYTHON_INSTALL(
+    "${MODULE}"
+    "${FILE}"
+    ${PYTHON_SITELIB}
+    COMPONENT ${_COMPONENT_NAME}
+  )
 endmacro()
 
 # PYTHON_BUILD_GET_TARGET(TARGET)
@@ -63,7 +123,7 @@ endfunction(PYTHON_BUILD_GET_TARGET NAME)
 #
 macro(PYTHON_BUILD MODULE FILE)
   set(python_build_target "")
-  python_build_get_target(python_build_target)
+  PYTHON_BUILD_GET_TARGET(python_build_target)
 
   set(INPUT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}/${FILE}")
 
@@ -83,7 +143,7 @@ macro(PYTHON_BUILD MODULE FILE)
     COMMAND ${CMAKE_COMMAND} -E make_directory "${OUTPUT_FILE_DIR}"
   )
 
-  python_build_file(${INPUT_FILE} ${OUTPUT_FILE})
+  PYTHON_BUILD_FILE(${INPUT_FILE} ${OUTPUT_FILE})
 endmacro()
 
 # PYTHON_BUILD_FILE(FILE [OUTPUT_FILE])
@@ -93,7 +153,7 @@ endmacro()
 #
 macro(PYTHON_BUILD_FILE FILE)
   set(python_build_target "")
-  python_build_get_target(python_build_target)
+  PYTHON_BUILD_GET_TARGET(python_build_target)
 
   set(extra_var "${ARGV1}")
   if(NOT extra_var STREQUAL "")
