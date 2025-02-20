@@ -484,19 +484,6 @@ endif()
 # --- EXECUTABLES --------------------------------------------------------------
 add_subdirectory(utils)
 
-# --- UNIT TESTS ---------------------------------------------------------------
-add_subdirectory(unittest)
-
-# --- CHECK EXAMPLES -----------------------------------------------------------
-if(BUILD_EXAMPLES)
-  add_subdirectory(examples)
-endif()
-
-# --- BENCHMARKS ---------------------------------------------------------------
-if(BUILD_BENCHMARK AND NOT BUILD_STANDALONE_PYTHON_INTERFACE)
-  add_subdirectory(benchmark)
-endif()
-
 # --- PACKAGING ----------------------------------------------------------------
 macro(EXPORT_VARIABLE var_name var_value)
   get_directory_property(has_parent PARENT_DIRECTORY)
