@@ -59,13 +59,15 @@ namespace pinocchio
         else
         {
           if (filePath.extension().empty())
-            throw std::invalid_argument("Cannot find extension for one of the mesh/texture");
+            PINOCCHIO_THROW_PRETTY(
+              std::invalid_argument, "Cannot find extension for one of the mesh/texture");
 
           auto st = filePath.stem();
           if (!st.empty())
             return st.string();
           else
-            throw std::invalid_argument("Cannot find a name for one of the mesh.texture");
+            PINOCCHIO_THROW_PRETTY(
+              std::invalid_argument, "Cannot find a name for one of the mesh.texture");
         }
       }
 
@@ -127,7 +129,7 @@ namespace pinocchio
         ret.minConfig = Vector::Constant(Nq, -1.01);
         ret.friction = Vector::Constant(Nv, 0.);
         ret.damping = Vector::Constant(Nv, 0.);
-        ret.armature = armature;
+        ret.armature = Vector::Constant(Nv, armature[0]);
         ret.frictionLoss = frictionLoss;
         ret.springStiffness = springStiffness;
         ret.springReference = springReference;
@@ -160,6 +162,10 @@ namespace pinocchio
         ret.springReference.tail(1) = range.springReference;
         ret.springStiffness.conservativeResize(springStiffness.size() + 1);
         ret.springStiffness.tail(1) = range.springStiffness;
+
+        ret.armature.conservativeResize(armature.size() + Nv);
+        ret.armature.tail(Nv) = range.armature;
+
         return ret;
       }
 
@@ -168,7 +174,8 @@ namespace pinocchio
       {
 
         if (!use_limits && el.get_optional<std::string>("<xmlattr>.range"))
-          throw std::invalid_argument("Range limit is specified but it was not specify to use it.");
+          PINOCCHIO_THROW_PRETTY(
+            std::invalid_argument, "Range limit is specified but it was not specify to use it.");
 
         // Type
         auto type_s = el.get_optional<std::string>("<xmlattr>.type");
@@ -208,7 +215,7 @@ namespace pinocchio
 
         value = el.get_optional<double>("<xmlattr>.armature");
         if (value)
-          range.armature = *value;
+          range.armature[0] = *value;
 
         // friction loss
         value = el.get_optional<double>("<xmlattr>.frictionloss");
@@ -223,7 +230,8 @@ namespace pinocchio
           else if (jointType == "hinge")
             posRef = currentCompiler.convertAngle(*value);
           else
-            throw std::invalid_argument(
+            PINOCCHIO_THROW_PRETTY(
+              std::invalid_argument,
               "Reference position can only be used with hinge or slide joints.");
         }
       }
@@ -251,7 +259,13 @@ namespace pinocchio
         // Placement
         jointPlacement = currentGraph.convertPosition(el);
 
-        // ChildClass < Class < Real Joint
+        // default < ChildClass < Class < Real Joint
+        if (currentGraph.mapOfClasses.find("mujoco_default") != currentGraph.mapOfClasses.end())
+        {
+          const MjcfClass & classD = currentGraph.mapOfClasses.at("mujoco_default");
+          if (auto joint_p = classD.classElement.get_child_optional("joint"))
+            goThroughElement(*joint_p, use_limit, currentGraph.compilerInfo);
+        }
         //  childClass
         if (currentBody.childClass != "")
         {
@@ -348,7 +362,8 @@ namespace pinocchio
         double mass = std::max(el.get<double>("<xmlattr>.mass"), compilerInfo.boundMass);
         ;
         if (mass < 0)
-          throw std::invalid_argument("Mass of body is not supposed to be negative");
+          PINOCCHIO_THROW_PRETTY(
+            std::invalid_argument, "Mass of body is not supposed to be negative");
 
         Inertia::Vector3 com;
         auto com_s = el.get_optional<std::string>("<xmlattr>.pos");
@@ -400,7 +415,8 @@ namespace pinocchio
         auto chcl_s = childClass;
         // if inertiafromgeom is false and inertia does not exist - throw
         if (!compilerInfo.inertiafromgeom && !el.get_child_optional("inertial"))
-          throw std::invalid_argument("Cannot get inertia from geom and no inertia was found");
+          PINOCCHIO_THROW_PRETTY(
+            std::invalid_argument, "Cannot get inertia from geom and no inertia was found");
 
         bool usegeominertia = false;
         if (compilerInfo.inertiafromgeom)
@@ -514,7 +530,7 @@ namespace pinocchio
         {
           std::cout << "Warning - Only texture with files are supported" << std::endl;
           if (name.empty())
-            throw std::invalid_argument("Textures need a name.");
+            PINOCCHIO_THROW_PRETTY(std::invalid_argument, "Textures need a name.");
         }
         else
         {
@@ -543,9 +559,15 @@ namespace pinocchio
         if (n)
           name = *n;
         else
-          throw std::invalid_argument("Material was given without a name");
+          PINOCCHIO_THROW_PRETTY(std::invalid_argument, "Material was given without a name");
 
-        // Class < Attributes
+        // default < Class < Attributes
+        if (mapOfClasses.find("mujoco_default") != mapOfClasses.end())
+        {
+          const MjcfClass & classD = mapOfClasses.at("mujoco_default");
+          if (auto mat_p = classD.classElement.get_child_optional("material"))
+            mat.goThroughElement(*mat_p);
+        }
         auto cl_s = el.get_optional<std::string>("<xmlattr>.class");
         if (cl_s)
         {
@@ -566,20 +588,52 @@ namespace pinocchio
 
         MjcfMesh mesh;
         auto file = el.get_optional<std::string>("<xmlattr>.file");
-        if (!file)
-          throw std::invalid_argument("Only meshes with files are supported");
-
-        fs::path filePath(*file);
-        std::string name = getName(el, filePath);
-
-        mesh.filePath =
-          updatePath(compilerInfo.strippath, compilerInfo.meshdir, modelPath, filePath).string();
-
         auto scale = el.get_optional<std::string>("<xmlattr>.scale");
         if (scale)
           mesh.scale = internal::getVectorFromStream<3>(*scale);
+        if (file)
+        {
+          fs::path filePath(*file);
+          std::string name = getName(el, filePath);
 
-        mapOfMeshes.insert(std::make_pair(name, mesh));
+          mesh.filePath =
+            updatePath(compilerInfo.strippath, compilerInfo.meshdir, modelPath, filePath).string();
+          mapOfMeshes.insert(std::make_pair(name, mesh));
+          return;
+        }
+
+        // Handle vertex-based mesh
+        auto vertex = el.get_optional<std::string>("<xmlattr>.vertex");
+        if (!vertex)
+        {
+          PINOCCHIO_THROW_PRETTY(
+            std::invalid_argument, "Only meshes with files/vertices are supported.")
+        }
+
+        auto name = el.get_optional<std::string>("<xmlattr>.name");
+        if (!name)
+        {
+          PINOCCHIO_THROW_PRETTY(
+            std::invalid_argument, "Mesh with vertices without a name is not supported");
+        }
+
+        // Parse and validate vertices
+        Eigen::VectorXd meshVertices = internal::getUnknownSizeVectorFromStream(*vertex);
+        if (meshVertices.size() % 3 != 0)
+        {
+          PINOCCHIO_THROW_PRETTY(
+            std::invalid_argument, "Number of vertices is not a multiple of 3");
+        }
+
+        // Convert to 3D vertex matrix
+        const auto numVertices = meshVertices.size() / 3;
+        Eigen::MatrixX3d vertices(numVertices, 3);
+        for (auto i = 0; i < numVertices; ++i)
+        {
+          vertices.row(i) = meshVertices.segment<3>(3 * i).transpose();
+        }
+        mesh.vertices = vertices;
+        mapOfMeshes.insert(std::make_pair(*name, mesh));
       }
 
       void MjcfGraph::parseAsset(const ptree & el)
@@ -596,13 +650,14 @@ namespace pinocchio
             parseTexture(v.second);
 
           if (v.first == "hfield")
-            throw std::invalid_argument("hfields are not supported yet");
+            PINOCCHIO_THROW_PRETTY(std::invalid_argument, "hfields are not supported yet");
         }
       }
 
-      void MjcfGraph::parseDefault(ptree & el, const ptree & parent)
+      void MjcfGraph::parseDefault(ptree & el, const ptree & parent, const std::string & parentTag)
       {
         boost::optional<std::string> nameClass;
+        // Classes
         for (ptree::value_type & v : el)
         {
           if (v.first == "<xmlattr>")
@@ -617,10 +672,18 @@ namespace pinocchio
               mapOfClasses.insert(std::make_pair(*nameClass, classDefault));
             }
             else
-              throw std::invalid_argument("Class does not have a name. Cannot parse model.");
+              PINOCCHIO_THROW_PRETTY(
+                std::invalid_argument, "Class does not have a name. Cannot parse model.");
           }
-          if (v.first == "default")
-            parseDefault(v.second, el);
+          else if (v.first == "default")
+            parseDefault(v.second, el, v.first);
+          else if (parentTag == "mujoco" && v.first != "<xmlattr>")
+          {
+            MjcfClass classDefault;
+            classDefault.className = "mujoco_default";
+            classDefault.classElement = el;
+            mapOfClasses.insert(std::make_pair("mujoco_default", classDefault));
+          }
         }
       }
 
@@ -679,8 +742,10 @@ namespace pinocchio
         {
           std::string eulerseq = *eulerS;
           if (eulerseq.find_first_not_of("xyzXYZ") != std::string::npos || eulerseq.size() != 3)
-            throw std::invalid_argument(
-              "Model tried to use euler angles but euler sequence is wrong");
+          {
+            PINOCCHIO_THROW_PRETTY(
+              std::invalid_argument, "Model tried to use euler angles but euler sequence is wrong");
+          }
           else
           {
             // get index combination
@@ -708,7 +773,7 @@ namespace pinocchio
                 compilerInfo.mapEulerAngles.col(ci) = Eigen::Vector3d::UnitZ();
                 break;
               default:
-                throw std::invalid_argument("Euler Axis does not exist");
+                PINOCCHIO_THROW_PRETTY(std::invalid_argument, "Euler Axis does not exist");
                 break;
               }
             }
@@ -761,7 +826,7 @@ namespace pinocchio
           if (body1)
             eq.body1 = *body1;
           else
-            throw std::invalid_argument("Equality constraint needs a first body");
+            PINOCCHIO_THROW_PRETTY(std::invalid_argument, "Equality constraint needs a first body");
 
           // get the name of second body
           auto body2 = v.second.get_optional<std::string>("<xmlattr>.body2");
@@ -790,7 +855,8 @@ namespace pinocchio
         if (pt.get_child_optional("mujoco"))
           el = pt.get_child("mujoco");
         else
-          throw std::invalid_argument("This is not a standard mujoco model. Cannot parse it.");
+          PINOCCHIO_THROW_PRETTY(
+            std::invalid_argument, "This is not a standard mujoco model. Cannot parse it.");
 
         for (const ptree::value_type & v : el)
         {
@@ -801,14 +867,15 @@ namespace pinocchio
             if (n_s)
               modelName = *n_s;
             else
-              throw std::invalid_argument("Model is missing a name. Cannot parse it");
+              PINOCCHIO_THROW_PRETTY(
+                std::invalid_argument, "Model is missing a name. Cannot parse it");
           }
 
           if (v.first == "compiler")
             parseCompiler(el.get_child("compiler"));
 
           if (v.first == "default")
-            parseDefault(el.get_child("default"), el);
+            parseDefault(el.get_child("default"), el, "mujoco");
 
           if (v.first == "asset")
             parseAsset(el.get_child("asset"));
@@ -889,7 +956,7 @@ namespace pinocchio
           jType = UrdfVisitor::REVOLUTE;
         }
         else
-          throw std::invalid_argument("Unknown joint type");
+          PINOCCHIO_THROW_PRETTY(std::invalid_argument, "Unknown joint type");
 
         urdfVisitor.addJointAndBody(
           jType, joint.axis, parentFrameId, jointInParent, joint.jointName, inert, bodyInJoint,
@@ -898,7 +965,9 @@ namespace pinocchio
 
         // Add armature info
         JointIndex j_id = urdfVisitor.getJointId(joint.jointName);
-        urdfVisitor.model.armature[static_cast<Eigen::Index>(j_id) - 1] = range.armature;
+        urdfVisitor.model.armature.segment(
+          urdfVisitor.model.joints[j_id].idx_v(), urdfVisitor.model.joints[j_id].nv()) =
+          range.armature;
       }
 
       void MjcfGraph::fillModel(const std::string & nameOfBody)
@@ -912,7 +981,7 @@ namespace pinocchio
         if (!currentBody.bodyParent.empty())
           parentFrameId = urdfVisitor.getBodyId(currentBody.bodyParent);
 
-        const Frame & frame = urdfVisitor.model.frames[parentFrameId];
+        Frame frame = urdfVisitor.model.frames[parentFrameId];
         // get body pose in body parent
         const SE3 bodyPose = currentBody.bodyPlacement;
         Inertia inert = currentBody.bodyInertia;
@@ -959,7 +1028,8 @@ namespace pinocchio
           for (const auto & joint : currentBody.jointChildren)
           {
             if (joint.jointType == "free")
-              throw std::invalid_argument("Joint Composite trying to be created with a freeFlyer");
+              PINOCCHIO_THROW_PRETTY(
+                std::invalid_argument, "Joint Composite trying to be created with a freeFlyer");
 
             SE3 jointInParent = bodyPose * joint.jointPlacement;
             bodyInJoint = joint.jointPlacement.inverse();
@@ -994,7 +1064,8 @@ namespace pinocchio
               rangeCompo = rangeCompo.concatenate<1, 1>(joint.range);
             }
             else
-              throw std::invalid_argument("Unknown joint type trying to be parsed.");
+              PINOCCHIO_THROW_PRETTY(
+                std::invalid_argument, "Unknown joint type trying to be parsed.");
 
             prevJointPlacement = jointInParent;
           }
@@ -1007,15 +1078,18 @@ namespace pinocchio
           FrameIndex jointFrameId = urdfVisitor.model.addJointFrame(joint_id, (int)parentFrameId);
           urdfVisitor.appendBodyToJoint(jointFrameId, inert, bodyInJoint, nameOfBody);
 
-          urdfVisitor.model.armature[static_cast<Eigen::Index>(joint_id) - 1] = rangeCompo.armature;
+          urdfVisitor.model.armature.segment(
+            urdfVisitor.model.joints[joint_id].idx_v(), urdfVisitor.model.joints[joint_id].nv()) =
+            rangeCompo.armature;
         }
 
-        FrameIndex previousFrameId = urdfVisitor.model.frames.size();
+        FrameIndex bodyId = urdfVisitor.model.getFrameId(nameOfBody, BODY);
+        frame = urdfVisitor.model.frames[bodyId];
         for (const auto & site : currentBody.siteChildren)
         {
           SE3 placement = bodyInJoint * site.sitePlacement;
-          previousFrameId = urdfVisitor.model.addFrame(
-            Frame(site.siteName, frame.parentJoint, previousFrameId, placement, OP_FRAME));
+          urdfVisitor.model.addFrame(
+            Frame(site.siteName, frame.parentJoint, bodyId, placement, OP_FRAME));
         }
       }
 
@@ -1091,7 +1165,7 @@ namespace pinocchio
           urdfVisitor.model.referenceConfigurations.insert(std::make_pair(keyName, qpos));
         }
         else
-          throw std::invalid_argument("Keyframe size does not match model size");
+          PINOCCHIO_THROW_PRETTY(std::invalid_argument, "Keyframe size does not match model size");
       }
 
       void MjcfGraph::parseContactInformation(
@@ -1128,7 +1202,6 @@ namespace pinocchio
       void MjcfGraph::parseRootTree()
       {
         urdfVisitor.setName(modelName);
-
         // get name and inertia of first root link
         std::string rootLinkName = bodiesList.at(0);
         MjcfBody rootBody = mapOfBodies.find(rootLinkName)->second;
