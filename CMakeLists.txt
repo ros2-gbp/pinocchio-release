@@ -447,15 +447,6 @@ add_subdirectory(bindings)
 # --- EXECUTABLES --------------------------------------------------------------
 add_subdirectory(utils)
 
-# --- UNIT TESTS ---------------------------------------------------------------
-add_subdirectory(unittest)
-
-# --- CHECK EXAMPLES -----------------------------------------------------------
-add_subdirectory(examples)
-
-# --- BENCHMARKS ---------------------------------------------------------------
-add_subdirectory(benchmark)
-
 # --- PACKAGING ----------------------------------------------------------------
 macro(EXPORT_VARIABLE var_name var_value)
   get_directory_property(has_parent PARENT_DIRECTORY)
