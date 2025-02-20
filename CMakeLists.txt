@@ -23,14 +23,6 @@ set(PROJECT_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR})
 set(CXX_DISABLE_WERROR True)
 set(CMAKE_VERBOSE_MAKEFILE True)
 
-# Set clang as compiler
-if(NOT CMAKE_CXX_COMPILER)
-  set(CMAKE_CXX_COMPILER clang++)
-endif()
-if(NOT CMAKE_C_COMPILER)
-  set(CMAKE_C_COMPILER clang)
-endif()
-
 # ----------------------------------------------------
 # --- OPTIONS  ---------------------------------------
 # Need to be set before including base.cmake
@@ -141,7 +133,7 @@ option(BUILD_ADVANCED_TESTING "Build the advanced tests (multiprecision, etc.) o
 option(BUILD_WITH_URDF_SUPPORT "Build the library with the URDF format support" ON)
 option(BUILD_WITH_SDF_SUPPORT "Build the library with the SDF format support" OFF)
 option(BUILD_WITH_COLLISION_SUPPORT
-       "Build the library with the collision support (required HPP-FCL)" ON)
+       "Build the library with the collision support (required HPP-FCL)" OFF)
 option(BUILD_WITH_AUTODIFF_SUPPORT
        "Build the library with the automatic differentiation support (via CppAD)" OFF)
 option(BUILD_WITH_CASADI_SUPPORT "Build the library with the support of CASADI" OFF)
@@ -459,6 +451,15 @@ add_subdirectory(bindings)
 
 # --- EXECUTABLES --------------------------------------------------------------
 add_subdirectory(utils)
+
+# --- UNIT TESTS ---------------------------------------------------------------
+add_subdirectory(unittest)
+
+# --- CHECK EXAMPLES -----------------------------------------------------------
+add_subdirectory(examples)
+
+# --- BENCHMARKS ---------------------------------------------------------------
+add_subdirectory(benchmark)
 
 # --- PACKAGING ----------------------------------------------------------------
 macro(EXPORT_VARIABLE var_name var_value)
