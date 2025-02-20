@@ -97,7 +97,9 @@ function(PINOCCHIO_TARGET target_name)
       ${LIB_NAME}
       PROPERTIES LINKER_LANGUAGE CXX
                  INSTALL_RPATH "\$ORIGIN"
-                 VERSION ${PROJECT_VERSION})
+                 VERSION ${PROJECT_VERSION}
+                 CXX_VISIBILITY_PRESET hidden
+                 VISIBILITY_INLINES_HIDDEN ON)
   endif()
 
   if(ENABLE_TEMPLATE_INSTANTIATION AND NOT ARGS_INTERFACE)
@@ -182,6 +184,16 @@ add_header_group(${PROJECT_NAME}_CORE_GENERATED_PUBLIC_HEADERS)
 #
 # This target will also have hpp-fcl and workspace module in it.
 pinocchio_specific_type(default DEFAULT_SCOPE)
+
+# Some core library algorithms have different behavior if PINOCCHIO_WITH_HPP_FCL is defined. Since
+# some are template instantiated, or some user can link only on pinocchio_default, we muste define
+# PINOCCHIO_WITH_HPP_FCL in pinocchio_default.
+if(BUILD_WITH_HPP_FCL_SUPPORT)
+  target_compile_definitions(pinocchio_default PUBLIC PINOCCHIO_WITH_HPP_FCL)
+  target_include_directories(
+    pinocchio_default PUBLIC $<TARGET_PROPERTY:hpp-fcl::hpp-fcl,INTERFACE_INCLUDE_DIRECTORIES>)
+
+endif()
 
 # Define the extra target This target hold extra algorithms.
 if(BUILD_WITH_EXTRA_SUPPORT)
@@ -323,6 +335,20 @@ endif()
 if(BUILD_WITH_CASADI_SUPPORT)
   pinocchio_specific_type(casadi CASADI_SCOPE)
   target_link_libraries(${PROJECT_NAME}_casadi ${CASADI_SCOPE} casadi)
+endif()
+
+if(BUILD_WITH_PYTHON_PARSER_SUPPORT)
+  set(PYTHON_PARSER_LIB_NAME "${PROJECT_NAME}_python_parser")
+
+  pinocchio_target(
+    ${PYTHON_PARSER_LIB_NAME}
+    SCALAR default
+    SOURCES ${${PROJECT_NAME}_PYTHON_PARSER_SOURCES}
+            ${${PROJECT_NAME}_PYTHON_PARSER_PUBLIC_HEADERS})
+  pinocchio_config(python_parser ${PYTHON_PARSER_LIB_NAME})
+
+  target_link_libraries(${PYTHON_PARSER_LIB_NAME} PUBLIC ${PROJECT_NAME}_default Python3::Python)
+  target_link_boost_python(${PYTHON_PARSER_LIB_NAME} PUBLIC)
 endif()
 
 # Define main target (default, parsers, extra).
