@@ -16,7 +16,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   include(GNUInstallDirs)
   include(package-config.cmake)
   set(PROJECT_JRL_CMAKE_MODULE_DIR ${CMAKE_CURRENT_LIST_DIR})
-  setup_project_package_finalize()
+  SETUP_PROJECT_PACKAGE_FINALIZE()
 
   # Add a dummy library with a useful INTERFACE_INCLUDE_DIRECTORIES
   add_library(${PROJECT_NAME} INTERFACE)
@@ -85,6 +85,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
       ./idl.cmake
       ./idlrtc.cmake
       ./install-data.cmake
+      ./install-helpers.cmake
       ./julia.cmake
       ./kineo.cmake
       ./lapack.cmake
@@ -101,6 +102,8 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
       ./openrtm.cmake
       ./oscheck.cmake
       ./package-config.cmake
+      ./package.xml
+      ./pixi.py
       ./pkg-config.cmake
       ./pkg-config.pc.cmake
       ./portability.cmake
@@ -113,8 +116,8 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
       ./README.md
       ./release.cmake
       ./relpath.cmake
-      ./ros.cmake
       ./ros2.cmake
+      ./ros.cmake
       ./sdformat.cmake
       ./setup.cfg
       ./shared-library.cmake
