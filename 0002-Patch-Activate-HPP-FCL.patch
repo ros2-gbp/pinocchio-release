@@ -1,7 +1,7 @@
-From 29a69f13e9c94009f8ffd03b98230397fe0e4a59 Mon Sep 17 00:00:00 2001
+From 3b4a2d417aa97e231c551eb29e042cc15c9d3923 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Sat, 13 Aug 2022 15:01:52 +0100
-Subject: [PATCH 2/3] Patch: Activate HPP-FCL
+Subject: [PATCH 2/4] Patch: Activate HPP-FCL
 
 ---
  CMakeLists.txt | 2 +-
