@@ -1,17 +1,17 @@
-From ba3585af5896bf4c320915bc929a2d4f7ba81d02 Mon Sep 17 00:00:00 2001
+From e39b231e8bda00d7250ab97c96320a7cfc4541c7 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Sat, 13 Aug 2022 15:01:52 +0100
-Subject: [PATCH 2/3] Patch: Activate HPP-FCL
+Subject: [PATCH 2/4] Patch: Activate HPP-FCL
 
 ---
  CMakeLists.txt | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 5e9a763..3303b47 100644
+index 473ea2d..6e75cd4 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -127,7 +127,7 @@ option(BUILD_ADVANCED_TESTING "Build the advanced tests (multiprecision, etc.) o
+@@ -141,7 +141,7 @@ option(BUILD_ADVANCED_TESTING "Build the advanced tests (multiprecision, etc.) o
  option(BUILD_WITH_URDF_SUPPORT "Build the library with the URDF format support" ON)
  option(BUILD_WITH_SDF_SUPPORT "Build the library with the SDF format support" OFF)
  option(BUILD_WITH_COLLISION_SUPPORT

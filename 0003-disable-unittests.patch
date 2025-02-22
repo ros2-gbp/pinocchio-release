@@ -1,17 +1,17 @@
-From f07c90d073b409f2573da983bbaedc71c5c90c86 Mon Sep 17 00:00:00 2001
+From ede4ec3f6c95edfbbd6b7067860afcbe44460482 Mon Sep 17 00:00:00 2001
 From: Guilhem Saurel <guilhem.saurel@laas.fr>
 Date: Thu, 20 Feb 2025 11:51:13 +0100
-Subject: [PATCH 3/3] disable unittests
+Subject: [PATCH 3/4] disable unittests
 
 ---
  CMakeLists.txt | 9 ---------
  1 file changed, 9 deletions(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 3303b47..acbf035 100644
+index 6e75cd4..77321ce 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -455,15 +455,6 @@ add_subdirectory(bindings)
+@@ -460,15 +460,6 @@ add_subdirectory(bindings)
  # --- EXECUTABLES --------------------------------------------------------------
  add_subdirectory(utils)
  
