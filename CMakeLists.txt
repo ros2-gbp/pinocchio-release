@@ -133,7 +133,7 @@ option(BUILD_ADVANCED_TESTING "Build the advanced tests (multiprecision, etc.) o
 option(BUILD_WITH_URDF_SUPPORT "Build the library with the URDF format support" ON)
 option(BUILD_WITH_SDF_SUPPORT "Build the library with the SDF format support" OFF)
 option(BUILD_WITH_COLLISION_SUPPORT
-       "Build the library with the collision support (required HPP-FCL)" ON)
+       "Build the library with the collision support (required HPP-FCL)" OFF)
 option(BUILD_WITH_AUTODIFF_SUPPORT
        "Build the library with the automatic differentiation support (via CppAD)" OFF)
 option(BUILD_WITH_CASADI_SUPPORT "Build the library with the support of CASADI" OFF)
@@ -330,7 +330,7 @@ else()
 endif()
 
 if(BUILD_WITH_HPP_FCL_SUPPORT)
-  add_project_dependency(hpp-fcl REQUIRED)
+  add_project_dependency(hpp-fcl 2.1.2 REQUIRED "hpp-fcl >= 2.1.2")
 endif()
 
 if(BUILD_WITH_ACCELERATE_SUPPORT)
@@ -451,6 +451,15 @@ add_subdirectory(bindings)
 
 # --- EXECUTABLES --------------------------------------------------------------
 add_subdirectory(utils)
+
+# --- UNIT TESTS ---------------------------------------------------------------
+add_subdirectory(unittest)
+
+# --- CHECK EXAMPLES -----------------------------------------------------------
+add_subdirectory(examples)
+
+# --- BENCHMARKS ---------------------------------------------------------------
+add_subdirectory(benchmark)
 
 # --- PACKAGING ----------------------------------------------------------------
 macro(EXPORT_VARIABLE var_name var_value)
