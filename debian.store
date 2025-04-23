@@ -1,1 +1,1 @@
-{"base": "23fb169", "parent": "debian/rolling/pinocchio", "previous": "46db1c9", "trim": "", "trimbase": ""}
+{"base": "6b108ed81b7e", "parent": "debian/kilted/pinocchio", "previous": "8cc1a35f39c1", "trim": "", "trimbase": ""}
