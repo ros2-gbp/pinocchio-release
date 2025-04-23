@@ -154,7 +154,7 @@ tracks:
     last_version: 3.4.0
     name: upstream
     patches: null
-    release_inc: '3'
+    release_inc: '4'
     release_repo_url: null
     release_tag: v:{version}
     ros_distro: kilted
