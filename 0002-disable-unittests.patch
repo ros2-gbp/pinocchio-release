@@ -1,4 +1,4 @@
-From 51e799c06b1c31e4380d611da21fabcb6e7e6b86 Mon Sep 17 00:00:00 2001
+From a4b73b9bb16e1483e3fdf8c27b656c91629a30e4 Mon Sep 17 00:00:00 2001
 From: Guilhem Saurel <guilhem.saurel@laas.fr>
 Date: Thu, 20 Feb 2025 11:46:18 +0100
 Subject: [PATCH 2/3] disable unittests
@@ -28,5 +28,5 @@ index 0580726..194f99d 100644
  macro(EXPORT_VARIABLE var_name var_value)
    get_directory_property(has_parent PARENT_DIRECTORY)
 -- 
-2.47.0
+2.49.0
 

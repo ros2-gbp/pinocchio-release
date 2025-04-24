@@ -1,4 +1,4 @@
-From 4a99ac1148e33fded517358843fe4ad3d597dc92 Mon Sep 17 00:00:00 2001
+From 534001421b93a759ac930e1b97fd73a0d070f8c7 Mon Sep 17 00:00:00 2001
 From: Guilhem Saurel <guilhem.saurel@laas.fr>
 Date: Sat, 22 Feb 2025 12:09:06 +0100
 Subject: [PATCH 3/3] CMake: fix for hpp-fcl/coal v3
@@ -21,5 +21,5 @@ index 194f99d..ef02196 100644
  
  if(BUILD_WITH_ACCELERATE_SUPPORT)
 -- 
-2.47.0
+2.49.0
 
