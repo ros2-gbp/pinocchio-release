@@ -1,4 +1,4 @@
-From c7d7da1c7aacb0f223c947bdc1e5bad695c847f1 Mon Sep 17 00:00:00 2001
+From 73872bf6275c641868fd06b30640e08e409b0015 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Thu, 15 Sep 2022 21:02:33 +0100
 Subject: [PATCH 2/6] rules.em: Set LDFLAGS=-Wl,-s
@@ -21,5 +21,5 @@ index 2b70fb7..9266b55 100755
  # Explicitly enable -DNDEBUG, see:
  # 	https://github.com/ros-infrastructure/bloom/issues/327
 -- 
-2.47.0
+2.49.0
 

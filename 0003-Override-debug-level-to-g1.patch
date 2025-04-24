@@ -1,4 +1,4 @@
-From dc91834d008f4d777d25a1e2c179e8e75a013ce9 Mon Sep 17 00:00:00 2001
+From 9466f8a553190742cb51d5e86f95343def000bb9 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 11 Oct 2022 23:27:10 +0100
 Subject: [PATCH 3/6] Override debug level to g1
@@ -22,5 +22,5 @@ index 9266b55..3bd7fa9 100755
  	BUILD_TESTING_ARG=-DBUILD_TESTING=OFF
  endif
 -- 
-2.47.0
+2.49.0
 
