@@ -1,4 +1,4 @@
-From afd67a8d04e9267f92d169aafaf98aa012a287da Mon Sep 17 00:00:00 2001
+From 22e890505a823810e00f054da823ff38b329b909 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Sat, 13 Aug 2022 15:01:31 +0100
 Subject: [PATCH 1/4] Patch: Use clang
@@ -27,5 +27,5 @@ index df25fb6..473ea2d 100644
  # --- OPTIONS  ---------------------------------------
  # Need to be set before including base.cmake
 -- 
-2.47.0
+2.49.0
 
