@@ -1,9 +1,9 @@
 #
-# Copyright (c) 2015-2023 CNRS INRIA
+# Copyright (c) 2015-2025 CNRS INRIA
 # Copyright (c) 2015 Wandercraft, 86 rue de Paris 91400 Orsay, France.
 #
 
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16)
 
 set(PROJECT_NAME pinocchio)
 set(PROJECT_DESCRIPTION
@@ -133,7 +133,7 @@ option(BUILD_ADVANCED_TESTING "Build the advanced tests (multiprecision, etc.) o
 option(BUILD_WITH_URDF_SUPPORT "Build the library with the URDF format support" ON)
 option(BUILD_WITH_SDF_SUPPORT "Build the library with the SDF format support" OFF)
 option(BUILD_WITH_COLLISION_SUPPORT
-       "Build the library with the collision support (required HPP-FCL)" ON)
+       "Build the library with the collision support (required HPP-FCL)" OFF)
 option(BUILD_WITH_AUTODIFF_SUPPORT
        "Build the library with the automatic differentiation support (via CppAD)" OFF)
 option(BUILD_WITH_CASADI_SUPPORT "Build the library with the support of CASADI" OFF)
@@ -413,6 +413,8 @@ if(BUILD_WITH_EXTRA_SUPPORT)
   list(APPEND ${PROJECT_NAME}_HEADERS ${${PROJECT_NAME}_EXTRA_PUBLIC_HEADERS})
 endif()
 
+list(APPEND ${PROJECT_NAME}_HEADERS ${${PROJECT_NAME}_VISUALIZERS_PUBLIC_HEADERS})
+
 if(BUILD_WITH_PARSERS_SUPPORT)
   list(APPEND ${PROJECT_NAME}_HEADERS ${${PROJECT_NAME}_PARSERS_PUBLIC_HEADERS})
 endif()
@@ -451,6 +453,17 @@ add_subdirectory(bindings)
 
 # --- EXECUTABLES --------------------------------------------------------------
 add_subdirectory(utils)
+
+# --- UNIT TESTS ---------------------------------------------------------------
+add_subdirectory(unittest)
+
+# --- CHECK EXAMPLES -----------------------------------------------------------
+add_subdirectory(examples)
+
+# --- BENCHMARKS ---------------------------------------------------------------
+if(BUILD_BENCHMARK)
+  add_subdirectory(benchmark)
+endif()
 
 # --- PACKAGING ----------------------------------------------------------------
 macro(EXPORT_VARIABLE var_name var_value)
