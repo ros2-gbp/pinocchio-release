@@ -1,4 +1,4 @@
-From 02432e3afe2bba3cc81e5f409760451446fb63f1 Mon Sep 17 00:00:00 2001
+From 8ee07c75f1e0fafc0226c89fa8cf152dba9f0033 Mon Sep 17 00:00:00 2001
 From: Guilhem Saurel <guilhem.saurel@laas.fr>
 Date: Thu, 20 Feb 2025 11:52:11 +0100
 Subject: [PATCH 3/4] disable unittests
@@ -8,7 +8,7 @@ Subject: [PATCH 3/4] disable unittests
  1 file changed, 9 deletions(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 6e75cd48e033..77321cee09a4 100644
+index 6e75cd4..77321ce 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -460,15 +460,6 @@ add_subdirectory(bindings)
