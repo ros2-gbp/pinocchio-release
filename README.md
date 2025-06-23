@@ -44,7 +44,6 @@ or via pip (currently only available on Linux):
 ## Table of contents
 
   - [Table of contents](#table-of-contents)
-  - [Introducing Pinocchio 3](#introducing-pinocchio-3)
   - [Pinocchio main features](#pinocchio-main-features)
   - [Documentation](#documentation)
   - [Examples](#examples)
@@ -57,22 +56,10 @@ or via pip (currently only available on Linux):
   - [Visualization](#visualization)
   - [Citing Pinocchio](#citing-pinocchio)
   - [Questions and Issues](#questions-and-issues)
+  - [Core-dev team](#core-dev-team)
   - [Credits](#credits)
   - [Open-source projects relying on Pinocchio](#open-source-projects-relying-on-pinocchio)
   - [Acknowledgments](#acknowledgments)
-
-## Introducing Pinocchio 3
-
-**Pinocchio3** is the latest major release of Pinocchio. It comes with multiple new features, such as:
-  - [Sparse constrained dynamics](https://laas.hal.science/hal-01790971v2/file/18-rss-analytical-derivatives-carpentier.pdf) and its analytical derivatives
-  - Full support of closed-loop mechanisms
-  - [State-of-the-art frictional contact solvers](https://hal.science/hal-04588906v1/file/simplecontacts2024.pdf)
-  - [Low-complexity constrained articulated body algorithms]()
-  - Full support of [multiple-precision floating-point (MPFR)](https://www.mpfr.org/) in Python and C++
-  - Full [CasADi](https://web.casadi.org/) support in Python and C++
-  - Increased support of [CppAD](https://github.com/coin-or/CppAD) and [CppADCodeGen]()
-  - New SDF and MJCF parsers
-  - and much more.
 
 ## Pinocchio main features
 
@@ -80,25 +67,37 @@ or via pip (currently only available on Linux):
 
    - C++ template library,
    - cache friendly,
-   - automatic code generation support is available via [CppADCodeGen](https://github.com/joaoleal/CppADCodeGen).
+   - support custom scalar type.
 
 **Pinocchio** is versatile, implementing basic and more advanced rigid body dynamics algorithms:
 
    - forward kinematics and its analytical derivatives,
    - forward/inverse dynamics and their analytical derivatives,
    - centroidal dynamics and its analytical derivatives,
-   - support multiple precision arithmetic via Boost.Multiprecision or any similar framework,
    - computations of kinematic and dynamic regressors for system identification and more,
-   - and much more with the support of modern and open-source Automatic Differentiation frameworks like [CppAD](https://github.com/coin-or/CppAD) or [CasADi](https://web.casadi.org/).
+   - full support of closed-loop mechanisms,
+   - [state-of-the-art frictional contact solvers](https://hal.science/hal-04588906v1/file/simplecontacts2024.pdf),
+   - low-complexity constrained articulated body algorithms,
+   - [sparse constrained dynamics](https://laas.hal.science/hal-01790971v2/file/18-rss-analytical-derivatives-carpentier.pdf) and its analytical derivatives,
+   - full support of [multiple-precision floating-point (MPFR)](https://www.mpfr.org/) in Python and C++,
+   - support of modern and open-source Automatic Differentiation frameworks like [CppAD](https://github.com/coin-or/CppAD) or [CasADi](https://web.casadi.org/),
+   - automatic code generation support is available via [CppADCodeGen](https://github.com/joaoleal/CppADCodeGen).
+
+**Pinocchio** can create Multi-body system from:
+
+  - URDF file,
+  - SDF file,
+  - MJCF file,
+  - SRDF file to add frame and contact.
 
 **Pinocchio** is flexible:
 
    - header only,
-   - C++ 98/03/11/14/17/20 compliant.
+   - C++ 11/14/17/20 compliant.
 
 **Pinocchio** is extensible.
 **Pinocchio** is multi-thread friendly.
-**Pinocchio** is reliable and extensively tested (unit-tests, simulations, and real-world robotics applications).
+**Pinocchio** is reliable and extensively tested (unit tests, simulations, and real-world robotics applications).
 **Pinocchio** is supported and tested on Windows, Mac OS X, Unix, and Linux ([see build status here](http://robotpkg.openrobots.org/rbulk/robotpkg/math/pinocchio/index.html)).
 
 ## Documentation
@@ -138,7 +137,7 @@ You can also consider the interactive Jupyter notebook [set of tutorials](https:
 
 ## Performances
 
-**Pinocchio** exploits, at best, the sparsity induced by the kinematic tree of robotics systems. Thanks to modern programming language paradigms, **Pinocchio** can unroll most of the computations directly at compile time, allowing to achieve impressive performances for a large range of robots, as illustrated by the plot below, obtained on a standard laptop equipped with an Intel Core i7 CPU @ 2.4 GHz.
+**Pinocchio** exploits, at best, the sparsity induced by the kinematic tree of robotics systems. Thanks to modern programming language paradigms, **Pinocchio** can unroll most of the computations directly at compile time, allowing to achieve impressive performances for an extensive range of robots, as illustrated by the plot below, obtained on a standard laptop equipped with an Intel Core i7 CPU @ 2.4 GHz.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/stack-of-tasks/pinocchio/master/doc/images/pinocchio-performances.png" width="600" alt="Pinocchio Logo" align="center"/>
@@ -149,8 +148,8 @@ In addition, the [introspection](https://github.com/rbd-benchmarks/rbd-benchmark
 
 ## Ongoing developments
 
-If you want to follow the current developments, you can directly refer to the [devel branch](https://github.com/stack-of-tasks/pinocchio/tree/devel).
-The [master branch](https://github.com/stack-of-tasks/pinocchio/tree/master/) only contains the latest release. Any new Pull Request should then be submitted on the [devel branch](https://github.com/stack-of-tasks/pinocchio/tree/devel/).
+If you want to follow the current developments, you can refer to the [devel branch](https://github.com/stack-of-tasks/pinocchio/tree/devel).
+The [master branch](https://github.com/stack-of-tasks/pinocchio/tree/master/) only contains the latest release. Any new Pull Request should be submitted on the [devel branch](https://github.com/stack-of-tasks/pinocchio/tree/devel/).
 
 ## Installation
 
@@ -230,7 +229,7 @@ And the following one for the link to the GitHub codebase:
 
 ## Citing specific algorithmic contributions
 
-**Pinocchio** goes beyond implementing the standard rigid-body dynamics algorithms and results from active research on simulation, learning and control.
+**Pinocchio** goes beyond implementing the standard rigid-body dynamics algorithms and results from active research on simulation, learning, and control.
 **Pinocchio** provides state-of-the-art algorithms for handling constraints, differentiating forward and inverse dynamics, etc.
 If you use these algorithms, please consider citing them in your research articles.
 
@@ -239,27 +238,39 @@ If you use these algorithms, please consider citing them in your research articl
 - Montaut, L., Le Lidec, Q., Petrik, V., Sivic, J., & Carpentier, J. (2024). [GJK++: Leveraging Acceleration Methods for Faster Collision Detection](https://hal.science/hal-04070039/). IEEE Transactions on Robotics.
 - Sathya, A., & Carpentier, J. (2024). [Constrained Articulated Body Dynamics Algorithms](https://hal.science/hal-04443056/). IEEE Transactions on Robotics.
 - Montaut, L., Le Lidec, Q., Bambade, A., Petrik, V., Sivic, J., & Carpentier, J. (2023, May). [Differentiable collision detection: a randomized smoothing approach](https://hal.science/hal-03780482/). In 2023 IEEE International Conference on Robotics and Automation (ICRA).
-- Montaut, L., Le Lidec, Q., Petrik, V., Sivic, J., & Carpentier, J. (2022, June). [Collision Detection Accelerated: An Optimization Perspective](https://hal.science/hal-03662157/). In Robotics: Science and Systems (RSS 2O22).
+- Montaut, L., Le Lidec, Q., Petrik, V., Sivic, J., & Carpentier, J. (2022, June). [Collision Detection Accelerated: An Optimization Perspective](https://hal.science/hal-03662157/). In Robotics: Science and Systems (RSS 2022).
 - Carpentier, J., Budhiraja, R., & Mansard, N. (2021, July). [Proximal and sparse resolution of constrained dynamic equations](https://hal.science/hal-03271811/). In Robotics: Science and Systems (RSS 2021).
-- Carpentier, J., & Mansard, N. (2018, June). [Analytical derivatives of rigid body dynamics algorithms](https://hal.science/hal-01790971/). In Robotics: Science and systems (RSS 2018).
+- Carpentier, J., & Mansard, N. (2018, June). [Analytical derivatives of rigid body dynamics algorithms](https://hal.science/hal-01790971/). In Robotics: Science and Systems (RSS 2018).
 
 ## Questions and Issues
 
 Do you have a question or an issue? You may either directly open a [new question](https://github.com/stack-of-tasks/pinocchio/discussions/new?category=q-a) or a [new issue](https://github.com/stack-of-tasks/pinocchio/issues) or, directly contact us via the mailing list <pinocchio@inria.fr>.
 
-## Credits
+## Core-dev team
 
-The following people have been involved in the development of **Pinocchio** and are warmly thanked for their contributions:
+The currently active core developers of **Pinocchio** are:
 
 -   [Justin Carpentier](https://jcarpent.github.io) (Inria): main developer and manager of the project
+-   [Guilhem Saurel](https://www.laas.fr/fr/annuaire/gsaurel) (LAAS-CNRS): CI/CD, packaging
+-   [Etienne Arlaud](https://github.com/EtienneAr) (Inria): core developer
+-   [Wilson Jallet](https://github.com/ManifoldFR) (LAAS-CNRS/Inria): extension of Python bindings, C++ visualization API
+-   [Fabian Schramm](https://github.com/fabinsch) (Inria): core developper
+-   [Stéphane Caron](https://scaron.info) (Inria): core developper
+-   [Joris Vaillant](https://github.com/jorisv) (Inria): core developer and project manager
+-   [Megane Millan](https://github.com/MegMll) (Inria): core developer
+-   [Ajay Sathya](https://www.ajaysathya.com/) (Inria): core developer
+
+## Credits
+
+In addition to the core dev team, the following people have also been involved in the development of **Pinocchio** and are warmly thanked for their contributions:
+
 -   [Nicolas Mansard](http://projects.laas.fr/gepetto/index.php/Members/NicolasMansard) (LAAS-CNRS): initial project instructor
--   [Guilhem Saurel](http://projects.laas.fr/gepetto/index.php/Members/GuilhemSaurel) (LAAS-CNRS): continuous integration and deployment
--   [Joseph Mirabel](http://jmirabel.github.io/) (Eureka Robotics): Lie groups and hpp-fcl implementation
+-   [Joseph Mirabel](http://jmirabel.github.io/) (Eureka Robotics): Lie groups and hpp-fcl support
 -   [Antonio El Khoury](https://www.linkedin.com/in/antonioelkhoury) (Wandercraft): bug fixes
 -   [Gabriele Buondono](http://projects.laas.fr/gepetto/index.php/Members/GabrieleBuondonno) (LAAS-CNRS): features extension, bug fixes, and Python bindings
 -   [Florian Valenza](https://fr.linkedin.com/in/florian-valenza-1b274082) (Astek): core developments and hpp-fcl support
 -   [Wolfgang Merkt](http://www.wolfgangmerkt.com/) (University of Oxford): ROS integration and support
--   [Rohan Budhiraja](https://scholar.google.com/citations?user=NW9Io9AAAAAJ) (LAAS-CNRS): features extension
+-   [Rohan Budhiraja](https://scholar.google.com/citations?user=NW9Io9AAAAAJ) (Inria/LAAS-CNRS): features extension
 -   [Loïc Estève](https://github.com/lesteve) (Inria): Conda integration and support
 -   [Igor Kalevatykh](https://github.com/ikalevatykh) (Inria): Panda3d viewer support
 -   [Matthieu Vigne](https://github.com/matthieuvigne) (Wandercraft): MeshCat viewer support
@@ -267,17 +278,10 @@ The following people have been involved in the development of **Pinocchio** and 
 -   [François Keith](https://scholar.google.fr/citations?user=cxSxXiQAAAAJ&hl=en) (CEA): Windows support
 -   [Sarah El Kazdadi](https://github.com/sarah-ek) (Inria): multi-precision arithmetic support
 -   [Nicolas Torres Alberto](https://scholar.google.com/citations?user=gYNLhEIAAAAJ&hl=en) (Inria): features extension
--   [Etienne Arlaud](https://github.com/EtienneAr) (Inria): RViz viewer support
--   [Wilson Jallet](https://github.com/ManifoldFR) (LAAS-CNRS/Inria): extension of Python bindings
--   [Fabian Schramm](https://github.com/fabinsch) (Inria): core developper
 -   [Shubham Singh](https://github.com/shubhamsingh91) (UT Austin): second-order inverse dynamics derivatives
--   [Stéphane Caron](https://scaron.info) (Inria): core developper
--   [Joris Vaillant](https://github.com/jorisv) (Inria): core developer and manager of the project
 -   [Sebastian Castro](https://roboticseabass.com) (The AI Institute): MeshCat viewer feature extension
 -   [Lev Kozlov](https://github.com/lvjonok): Kinetic and potential energy regressors
--   [Megane Millan](https://github.com/MegMll) (Inria): Features extension and core developer
 -   [Simeon Nedelchev](https://github.com/simeon-ned): Pseudo inertia and Log-Cholesky parametrization
--   [Ajay Sathya](https://www.ajaysathya.com/) (Inria): core developer
 
 If you have participated in the development of **Pinocchio**, please add your name and contribution to this list.
 
