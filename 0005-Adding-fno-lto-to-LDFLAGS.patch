@@ -1,4 +1,4 @@
-From d3af04d6cc76a844f4a71419b8fc05ba0083aa2c Mon Sep 17 00:00:00 2001
+From 1c04745c883cb1b01c4dadfca3accc955ab26c84 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Mon, 30 Jan 2023 17:02:06 +0000
 Subject: [PATCH 5/6] Adding -fno-lto to LDFLAGS
