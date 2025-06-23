@@ -1,17 +1,17 @@
-From 02432e3afe2bba3cc81e5f409760451446fb63f1 Mon Sep 17 00:00:00 2001
+From 32608b51522e5e8b21732b326e1b497e58f02d3b Mon Sep 17 00:00:00 2001
 From: Guilhem Saurel <guilhem.saurel@laas.fr>
 Date: Thu, 20 Feb 2025 11:52:11 +0100
-Subject: [PATCH 3/4] disable unittests
+Subject: [PATCH 3/3] disable unittests
 
 ---
- CMakeLists.txt | 9 ---------
- 1 file changed, 9 deletions(-)
+ CMakeLists.txt | 11 -----------
+ 1 file changed, 11 deletions(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 6e75cd4..77321ce 100644
+index 180761f..c659d3c 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -460,15 +460,6 @@ add_subdirectory(bindings)
+@@ -462,17 +462,6 @@ add_subdirectory(bindings)
  # --- EXECUTABLES --------------------------------------------------------------
  add_subdirectory(utils)
  
@@ -22,7 +22,9 @@ index 6e75cd4..77321ce 100644
 -add_subdirectory(examples)
 -
 -# --- BENCHMARKS ---------------------------------------------------------------
--add_subdirectory(benchmark)
+-if(BUILD_BENCHMARK)
+-  add_subdirectory(benchmark)
+-endif()
 -
  # --- PACKAGING ----------------------------------------------------------------
  macro(EXPORT_VARIABLE var_name var_value)
