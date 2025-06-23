@@ -1,4 +1,4 @@
-# Copyright (C) 2008-2023 LAAS-CNRS, JRL AIST-CNRS, INRIA.
+# Copyright (C) 2008-2025 LAAS-CNRS, JRL AIST-CNRS, INRIA.
 #
 # This program is free software: you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -254,6 +254,7 @@ macro(_SETUP_DOXYGEN_CONFIG_FILE configfile)
     MATHJAX_RELPATH
     MATHJAX_EXTENSIONS
     MATHJAX_CODEFILE
+    MATHJAX_VERSION
     SEARCHENGINE
     SERVER_BASED_SEARCH
     EXTERNAL_SEARCH
@@ -397,6 +398,39 @@ macro(_set_if_undefined variable)
   endif()
 endmacro()
 
+# _SETUP_MATHJAX_DEFAULTS
+# ----------------------------
+#
+# Set MathJax defaults depending on the current version of Doxygen and whether
+# some flags were already set.
+#
+# If the Doxygen version is less than 1.9.2, the DOXYGEN_MATHJAX_VERSION option will be unset.
+# If a path to MathJax is not provided, we will either:
+#   - point to our local vendored version of MathJax 3
+#   - unset the MathJax path; the Doxygen HTML header will point to the MathJax 2 CDN.
+macro(_SETUP_MATHJAX_DEFAULTS)
+  if(DOXYGEN_VERSION VERSION_GREATER_EQUAL 1.9.2)
+    _set_if_undefined(DOXYGEN_MATHJAX_VERSION MathJax_3)
+  else()
+    # remove unsupported option
+    unset(DOXYGEN_MATHJAX_VERSION)
+    message(
+      STATUS
+      "Doxygen version inferior to 1.9.2. If MathJax is enabled, v2.7 will be used."
+    )
+    # set to empty string to use the MathJax CDN
+  endif()
+  if("${DOXYGEN_MATHJAX_VERSION}" STREQUAL "MathJax_3")
+    # If using MathJax 3, use our vendored version by default.
+    _set_if_undefined(
+      DOXYGEN_MATHJAX_RELPATH
+      ${PROJECT_JRL_CMAKE_MODULE_DIR}/doxygen/MathJax
+    )
+  else()
+    _set_if_undefined(DOXYGEN_MATHJAX_RELPATH)
+  endif()
+endmacro(_SETUP_MATHJAX_DEFAULTS)
+
 # _SETUP_DOXYGEN_DEFAULT_OPTIONS
 # ----------------------------
 #
@@ -442,6 +476,7 @@ macro(_SETUP_DOXYGEN_DEFAULT_OPTIONS)
   # ---------------------------------------------------------------------------
   _set_if_undefined(DOXYGEN_HTML_OUTPUT doxygen-html)
   _set_if_undefined(DOXYGEN_GENERATE_TREEVIEW YES)
+  _SETUP_MATHJAX_DEFAULTS()
   # ---------------------------------------------------------------------------
   # Configuration options related to the LaTeX output
   # ---------------------------------------------------------------------------
@@ -479,7 +514,10 @@ macro(_SETUP_DOXYGEN_DEFAULT_OPTIONS)
   # ---------------------------------------------------------------------------
   # Configuration options related to external references
   # ---------------------------------------------------------------------------
-  _set_if_undefined(DOXYGEN_GENERATE_TAGFILE "${PROJECT_NAME}.doxytag")
+  _set_if_undefined(
+    DOXYGEN_GENERATE_TAGFILE
+    "doxygen-html/${PROJECT_NAME}.doxytag"
+  )
   # ---------------------------------------------------------------------------
   # Configuration options related to the dot tool
   # ---------------------------------------------------------------------------
@@ -557,9 +595,7 @@ macro(_SETUP_PROJECT_DOCUMENTATION)
     add_dependencies(doc ${PROJECT_NAME}-doc)
 
     add_custom_command(
-      OUTPUT
-        ${PROJECT_BINARY_DIR}/doc/${PROJECT_NAME}.doxytag
-        ${PROJECT_BINARY_DIR}/doc/doxygen-html
+      OUTPUT ${PROJECT_BINARY_DIR}/doc/doxygen-html
       COMMAND ${DOXYGEN_EXECUTABLE} ${JRL_CMAKEMODULE_DOXYFILE_PATH}
       WORKING_DIRECTORY doc
       COMMENT "Generating Doxygen documentation"
@@ -571,7 +607,6 @@ macro(_SETUP_PROJECT_DOCUMENTATION)
       APPEND
       PROPERTY
         ADDITIONAL_MAKE_CLEAN_FILES
-          ${PROJECT_BINARY_DIR}/doc/${PROJECT_NAME}.doxytag
           ${PROJECT_BINARY_DIR}/doc/doxygen.log
           ${PROJECT_BINARY_DIR}/doc/doxygen-html
     )
@@ -591,16 +626,19 @@ macro(_SETUP_PROJECT_DOCUMENTATION)
         COPY ${PROJECT_JRL_CMAKE_MODULE_DIR}/doxygen/MathJax
         DESTINATION ${PROJECT_BINARY_DIR}/doc/doxygen-html
       )
+      # the variable is unset if Doxygen version < 1.9.2
+      # otherwise, MathJax_3 is the default.
+      if(DOXYGEN_MATHJAX_VERSION STREQUAL "MathJax_3")
+        message(
+          STATUS
+          "MathJax version 3 will be used. If MATHJAX_RELPATH is unset we will use the vendored MathJax. "
+          "If you have set it, check that it's pointing at a MathJax 3 distribution."
+        )
+      endif()
     endif()
 
     # Install generated files.
     if(INSTALL_DOCUMENTATION)
-      if(EXISTS ${PROJECT_BINARY_DIR}/doc/${PROJECT_NAME}.doxytag)
-        install(
-          FILES ${PROJECT_BINARY_DIR}/doc/${PROJECT_NAME}.doxytag
-          DESTINATION ${CMAKE_INSTALL_FULL_DOCDIR}/doxygen-html
-        )
-      endif()
       install(
         DIRECTORY ${PROJECT_BINARY_DIR}/doc/doxygen-html
         DESTINATION ${CMAKE_INSTALL_FULL_DOCDIR}
@@ -630,19 +668,6 @@ macro(_SETUP_PROJECT_DOCUMENTATION)
   endif(NOT DOXYGEN_FOUND)
 endmacro(_SETUP_PROJECT_DOCUMENTATION)
 
-# REMOVE_DUPLICATES
-# -----------------
-#
-# Remove duplicate values from a space separated list
-function(REMOVE_DUPLICATES ARG_STR OUTPUT)
-  set(ARG_LIST ${ARG_STR})
-  separate_arguments(ARG_LIST)
-  list(REMOVE_DUPLICATES ARG_LIST)
-  string(REGEX REPLACE "([^\\]|^);" "\\1 " _TMP_STR "${ARG_LIST}")
-  string(REGEX REPLACE "[\\](.)" "\\1" _TMP_STR "${_TMP_STR}") # fixes escaping
-  set(${OUTPUT} "${_TMP_STR}" PARENT_SCOPE)
-endfunction()
-
 # _DOXYTAG_ENTRIES_FROM_CMAKE_DEPENDENCIES
 # ----------------------------------------
 #
@@ -655,9 +680,11 @@ macro(_DOXYTAG_ENTRIES_FROM_CMAKE_DEPENDENCIES DEPENDENCIES VAR_OUT)
       DEFINED ${PREFIX}_DOXYGENDOCDIR
       AND EXISTS ${${PREFIX}_DOXYGENDOCDIR}/${PREFIX}.doxytag
     )
-      set(
+      get_filename_component(DEP_DOCDIR "${${PREFIX}_DOXYGENDOCDIR}" ABSOLUTE)
+      list(
+        APPEND
         ${VAR_OUT}
-        "${${VAR_OUT}} \"${${PREFIX}_DOXYGENDOCDIR}/${PREFIX}.doxytag = ${${PREFIX}_DOXYGENDOCDIR}\""
+        "\"${${PREFIX}_DOXYGENDOCDIR}/${PREFIX}.doxytag = ${DEP_DOCDIR}\""
       )
     endif()
     if(DEFINED ${PREFIX}_DEPENDENCIES)
@@ -697,9 +724,9 @@ macro(_SETUP_PROJECT_DOCUMENTATION_FINALIZE)
       endif()
     endif()
     if(INSTALL_DOCUMENTATION)
-      # Find doxytag files To ignore this list of tag files, set variable
-      # DOXYGEN_TAGFILES
-      set(_TAGFILES_FROM_DEPENDENCIES "${DOXYGEN_TAGFILES_FROM_DEPENDENCIES}")
+      # Find doxytag files. To ignore this list of tag files,
+      # set the DOXYGEN_TAGFILES CMake variable or TAGFILES in doc/Doxyfile.extra.in.
+      set(_TAGFILES_FROM_DEPENDENCIES ${DOXYGEN_TAGFILES_FROM_DEPENDENCIES})
       set(PKG_REQUIRES ${_PKG_CONFIG_REQUIRES})
       list(APPEND PKG_REQUIRES ${_PKG_CONFIG_COMPILE_TIME_REQUIRES})
       foreach(PKG_CONFIG_STRING ${PKG_REQUIRES})
@@ -714,16 +741,16 @@ macro(_SETUP_PROJECT_DOCUMENTATION_FINALIZE)
           DEFINED ${PREFIX}_DOXYGENDOCDIR
           AND EXISTS ${${PREFIX}_DOXYGENDOCDIR}/${LIBRARY_NAME}.doxytag
         )
-          file(
-            RELATIVE_PATH
+          # always use absolute path
+          get_filename_component(
             DEP_DOCDIR
-            ${CMAKE_INSTALL_FULL_DOCDIR}
-            ${${PREFIX}_DOXYGENDOCDIR}
+            "${${PREFIX}_DOXYGENDOCDIR}"
+            ABSOLUTE
           )
-
-          set(
+          list(
+            APPEND
             _TAGFILES_FROM_DEPENDENCIES
-            "${_TAGFILES_FROM_DEPENDENCIES} \"${${PREFIX}_DOXYGENDOCDIR}/${LIBRARY_NAME}.doxytag = ${DEP_DOCDIR}\""
+            "\"${${PREFIX}_DOXYGENDOCDIR}/${LIBRARY_NAME}.doxytag = ${DEP_DOCDIR}\""
           )
         endif()
       endforeach()
@@ -732,9 +759,15 @@ macro(_SETUP_PROJECT_DOCUMENTATION_FINALIZE)
         _TAGFILES_FROM_DEPENDENCIES
       )
       if(_TAGFILES_FROM_DEPENDENCIES)
-        REMOVE_DUPLICATES(
-          ${_TAGFILES_FROM_DEPENDENCIES}
+        # use native deduplication routine for comma-separated lists, then
+        # convert comma-separated list to space-separated list string.
+        list(REMOVE_DUPLICATES _TAGFILES_FROM_DEPENDENCIES)
+        string(
+          REPLACE
+          ";"
+          " "
           DOXYGEN_TAGFILES_FROM_DEPENDENCIES
+          "${_TAGFILES_FROM_DEPENDENCIES}"
         )
       endif()
     endif()
