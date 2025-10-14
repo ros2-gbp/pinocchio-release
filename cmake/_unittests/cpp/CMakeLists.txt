@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.22)
 
 set(PROJECT_NAME jrl-cmakemodules-cpp)
 set(PROJECT_VERSION 0.0.0)
@@ -24,8 +24,7 @@ target_include_directories(
 install(
   TARGETS jrl_cmakemodule_lib
   EXPORT ${TARGETS_EXPORT_NAME}
-  DESTINATION
-  lib
+  DESTINATION lib
 )
 
 add_executable(jrl_cmakemodule_main src/main.cc)
