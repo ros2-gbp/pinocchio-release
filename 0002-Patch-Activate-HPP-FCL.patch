@@ -1,14 +1,14 @@
-From e59dbe027cf6168f4f5bb0732e1cd2eeffc7a7ca Mon Sep 17 00:00:00 2001
+From 03355610fbb602760c30345d847ae349653f8429 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Sat, 13 Aug 2022 15:01:52 +0100
-Subject: [PATCH 2/4] Patch: Activate HPP-FCL
+Subject: [PATCH 2/3] Patch: Activate HPP-FCL
 
 ---
  CMakeLists.txt | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 473ea2d..6e75cd4 100644
+index ade4efd..180761f 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -141,7 +141,7 @@ option(BUILD_ADVANCED_TESTING "Build the advanced tests (multiprecision, etc.) o
@@ -21,5 +21,5 @@ index 473ea2d..6e75cd4 100644
         "Build the library with the automatic differentiation support (via CppAD)" OFF)
  option(BUILD_WITH_CASADI_SUPPORT "Build the library with the support of CASADI" OFF)
 -- 
-2.49.0
+2.51.0
 
