@@ -3,7 +3,7 @@
 # Copyright (c) 2015 Wandercraft, 86 rue de Paris 91400 Orsay, France.
 #
 
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.22)
 
 set(PROJECT_NAME pinocchio)
 set(PROJECT_DESCRIPTION
@@ -11,7 +11,9 @@ set(PROJECT_DESCRIPTION
 )
 set(PROJECT_URL "http://github.com/stack-of-tasks/pinocchio")
 set(PROJECT_CUSTOM_HEADER_EXTENSION "hpp")
-set(PROJECT_USE_CMAKE_EXPORT TRUE)
+if(NOT BUILD_STANDALONE_PYTHON_INTERFACE)
+  set(PROJECT_USE_CMAKE_EXPORT TRUE)
+endif()
 set(PROJECT_USE_KEYWORD_LINK_LIBRARIES TRUE)
 set(PROJECT_COMPATIBILITY_VERSION AnyNewerVersion)
 set(PINOCCHIO_PROJECT_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR})
@@ -22,14 +24,6 @@ set(PROJECT_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR})
 # Disable -Werror on Unix for now.
 set(CXX_DISABLE_WERROR True)
 set(CMAKE_VERBOSE_MAKEFILE True)
-
-# Set clang as compiler
-if(NOT CMAKE_CXX_COMPILER)
-  set(CMAKE_CXX_COMPILER clang++)
-endif()
-if(NOT CMAKE_C_COMPILER)
-  set(CMAKE_C_COMPILER clang)
-endif()
 
 # ----------------------------------------------------
 # --- OPTIONS  ---------------------------------------
@@ -49,13 +43,6 @@ else()
       TARGET jrl-cmakemodules::jrl-cmakemodules
       PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
     message(STATUS "JRL cmakemodules found on system at ${JRL_CMAKE_MODULES}")
-  elseif(${CMAKE_VERSION} VERSION_LESS "3.14.0")
-    message(
-      FATAL_ERROR
-        "\nCan't find jrl-cmakemodules. Please either:\n"
-        "  - use git submodule: 'git submodule update --init'\n"
-        "  - or install https://github.com/jrl-umi3218/jrl-cmakemodules\n"
-        "  - or upgrade your CMake version to >= 3.14 to allow automatic fetching\n")
   else()
     message(STATUS "JRL cmakemodules not found. Let's fetch it.")
     include(FetchContent)
@@ -121,8 +108,8 @@ check_minimal_cxx_standard(11 ENFORCE)
 
 # --- OPTIONS ----------------------------------------
 option(BUILD_BENCHMARK "Build the benchmarks" OFF)
+option(BUILD_EXAMPLES "Build the examples" ON)
 option(BUILD_UTILS "Build the utils" OFF)
-option(BUILD_PYTHON_INTERFACE "Build the Python bindings" ON)
 option(GENERATE_PYTHON_STUBS "Generate the Python stubs associated to the Python library" OFF)
 option(BUILD_WITH_COMMIT_VERSION "Build libraries by setting specific commit version" OFF)
 
@@ -141,7 +128,7 @@ option(BUILD_ADVANCED_TESTING "Build the advanced tests (multiprecision, etc.) o
 option(BUILD_WITH_URDF_SUPPORT "Build the library with the URDF format support" ON)
 option(BUILD_WITH_SDF_SUPPORT "Build the library with the SDF format support" OFF)
 option(BUILD_WITH_COLLISION_SUPPORT
-       "Build the library with the collision support (required HPP-FCL)" ON)
+       "Build the library with the collision support (required HPP-FCL)" OFF)
 option(BUILD_WITH_AUTODIFF_SUPPORT
        "Build the library with the automatic differentiation support (via CppAD)" OFF)
 option(BUILD_WITH_CASADI_SUPPORT "Build the library with the support of CASADI" OFF)
@@ -163,12 +150,33 @@ if(APPLE)
 else(APPLE)
   set(BUILD_WITH_ACCELERATE_SUPPORT FALSE)
 endif(APPLE)
-option(GENERATE_PYTHON_STUBS "Generate the Python stubs associated to the Python library" OFF)
 
 option(INITIALIZE_WITH_NAN "Initialize Eigen entries with NaN" OFF)
 option(CHECK_RUNTIME_MALLOC "Check if some memory allocations are performed at runtime" OFF)
 
 option(ENABLE_TEMPLATE_INSTANTIATION "Template instantiation of the main library" ON)
+
+set(PINOCCHIO_MODEL_DIR "${PROJECT_SOURCE_DIR}/models")
+
+if(BUILD_BENCHMARK
+   OR BUILD_EXAMPLES
+   OR BUILD_TESTING)
+  # example-robot-data is required
+  if(EXAMPLE_ROBOT_DATA_MODEL_DIR)
+    file(REAL_PATH "${EXAMPLE_ROBOT_DATA_MODEL_DIR}" EXAMPLE_ROBOT_DATA_MODEL_DIR EXPAND_TILDE)
+    message(STATUS "Using provided example-robot-data at: ${EXAMPLE_ROBOT_DATA_MODEL_DIR}")
+  elseif(EXISTS "${CMAKE_CURRENT_LIST_DIR}/models/example-robot-data/CMakeLists.txt")
+    set(EXAMPLE_ROBOT_DATA_MODEL_DIR "${PINOCCHIO_MODEL_DIR}/example-robot-data/robots")
+  else()
+    find_package(example-robot-data REQUIRED CONFIG)
+    get_target_property(EXAMPLE_ROBOT_DATA_MODEL_DIR_DEF example-robot-data::example-robot-data
+                        INTERFACE_COMPILE_DEFINITIONS)
+    string(REPLACE "EXAMPLE_ROBOT_DATA_MODEL_DIR=" "" EXAMPLE_ROBOT_DATA_MODEL_DIR_QUOTES
+                   "${EXAMPLE_ROBOT_DATA_MODEL_DIR_DEF}")
+    string(REPLACE "\"" "" EXAMPLE_ROBOT_DATA_MODEL_DIR "${EXAMPLE_ROBOT_DATA_MODEL_DIR_QUOTES}")
+    message(STATUS "Using system example-robot-data at: ${EXAMPLE_ROBOT_DATA_MODEL_DIR}")
+  endif()
+endif()
 
 # Variable containing all the cflags definition, options and libraries to setup pkg-config.
 set(CFLAGS_OPTIONS)
@@ -210,8 +218,6 @@ endif(ENABLE_TEMPLATE_INSTANTIATION)
 macro(TAG_LIBRARY_VERSION target)
   set_target_properties(${target} PROPERTIES SOVERSION ${PROJECT_VERSION})
 endmacro(TAG_LIBRARY_VERSION)
-
-set(PINOCCHIO_MODEL_DIR "${PROJECT_SOURCE_DIR}/models")
 
 # ----------------------------------------------------
 # --- DEPENDENCIES -----------------------------------
@@ -268,6 +274,12 @@ endif(BUILD_WITH_AUTODIFF_SUPPORT)
 
 if(BUILD_WITH_CASADI_SUPPORT)
   add_project_dependency(casadi 3.4.5 REQUIRED PKG_CONFIG_REQUIRES "casadi >= 3.4.5")
+
+  # Normalize CasADi link target across versions. Prefer imported target (casadi::casadi), then
+  # legacy target (casadi)
+  if(NOT TARGET casadi::casadi AND TARGET casadi)
+    add_library(casadi::casadi ALIAS casadi)
+  endif()
   list(APPEND LIBRARIES_DEPENDENCIES ${PROJECT_NAME}_casadi)
 endif(BUILD_WITH_CASADI_SUPPORT)
 
@@ -309,6 +321,9 @@ if(BUILD_PYTHON_INTERFACE)
   set(PYTHON_COMPONENTS Interpreter Development NumPy)
   findpython(REQUIRED)
   add_project_dependency(eigenpy 2.7.10 REQUIRED)
+  if(BUILD_STANDALONE_PYTHON_INTERFACE)
+    add_project_dependency(${PROJECT_NAME} REQUIRED CONFIG)
+  endif()
 
   if(BUILD_WITH_URDF_SUPPORT)
     # console_bridge is urdfdom dependency.
@@ -338,6 +353,7 @@ else()
 endif()
 
 if(BUILD_WITH_HPP_FCL_SUPPORT)
+  set(COAL_DISABLE_HPP_FCL_WARNINGS ON)
   add_project_dependency(hpp-fcl REQUIRED)
 endif()
 
@@ -388,6 +404,12 @@ endif()
 
 # HPP-FCL sources
 if(BUILD_WITH_HPP_FCL_SUPPORT)
+  list(APPEND ${PROJECT_NAME}_PARSERS_SOURCES ${${PROJECT_NAME}_GRAPH_GEOMETRY_SOURCES})
+  list(APPEND ${PROJECT_NAME}_PARSERS_PUBLIC_HEADERS ${${PROJECT_NAME}_GRAPH_GEOMETRY_HEADERS})
+
+  list(APPEND ${PROJECT_NAME}_BINDINGS_PYTHON_SOURCES
+       ${${PROJECT_NAME}_BINDINGS_GRAPH_GEOMETRY_SOURCES})
+
   if(ENABLE_TEMPLATE_INSTANTIATION)
     list(APPEND ${PROJECT_NAME}_COLLISION_SOURCES
          ${${PROJECT_NAME}_COLLISION_TEMPLATE_INSTANTIATION_SOURCES})
@@ -438,9 +460,7 @@ if(BUILD_WITH_OPENMP_SUPPORT)
   list(APPEND ${PROJECT_NAME}_HEADERS ${${PROJECT_NAME}_PARALLEL_PUBLIC_HEADERS})
 endif()
 
-if(BUILD_PYTHON_INTERFACE)
-  list(APPEND ${PROJECT_NAME}_HEADERS ${${PROJECT_NAME}_BINDINGS_PYTHON_PUBLIC_HEADERS})
-endif()
+list(APPEND ${PROJECT_NAME}_HEADERS ${${PROJECT_NAME}_BINDINGS_PYTHON_PUBLIC_HEADERS})
 
 # Define PINOCCHIO_WINDOWS_DLL_PATH environment variable on Windows
 function(ADD_WINDOWS_DLL_PATH_TO_TEST TEST_NAME)
@@ -448,19 +468,36 @@ function(ADD_WINDOWS_DLL_PATH_TO_TEST TEST_NAME)
     get_test_property(${TEST_NAME} ENVIRONMENT ENV_VARIABLES)
     # TODO don't do this in the future
     list(APPEND ENV_VARIABLES
-         "PINOCCHIO_WINDOWS_DLL_PATH=$<TARGET_FILE_DIR:${PROJECT_NAME}_default>")
+         "PINOCCHIO_WINDOWS_DLL_PATH=$<TARGET_FILE_DIR:${PROJECT_NAME}::${PROJECT_NAME}_default>")
     set_tests_properties(${TEST_NAME} PROPERTIES ENVIRONMENT "${ENV_VARIABLES}")
   endif()
 endfunction()
 
 # --- MAIN LIBRARY -------------------------------------------------------------
-add_subdirectory(src)
+if(NOT BUILD_STANDALONE_PYTHON_INTERFACE)
+  add_subdirectory(src)
+endif()
 
 # --- BINDINGS -----------------------------------------------------------------
-add_subdirectory(bindings)
+if(BUILD_PYTHON_INTERFACE)
+  add_subdirectory(bindings)
+endif()
 
 # --- EXECUTABLES --------------------------------------------------------------
 add_subdirectory(utils)
+
+# --- UNIT TESTS ---------------------------------------------------------------
+add_subdirectory(unittest)
+
+# --- CHECK EXAMPLES -----------------------------------------------------------
+if(BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif()
+
+# --- BENCHMARKS ---------------------------------------------------------------
+if(BUILD_BENCHMARK AND NOT BUILD_STANDALONE_PYTHON_INTERFACE)
+  add_subdirectory(benchmark)
+endif()
 
 # --- PACKAGING ----------------------------------------------------------------
 macro(EXPORT_VARIABLE var_name var_value)
@@ -518,8 +555,5 @@ foreach(boostlib ${BOOST_REQUIRED_COMPONENTS})
 endforeach()
 pkg_config_append_cflags("${CFLAGS_DEPENDENCIES}")
 pkg_config_append_cflags("${CFLAGS_OPTIONS}")
-
-# Install catkin package.xml
-install(FILES package.xml DESTINATION share/${PROJECT_NAME})
 
 setup_project_finalize()
