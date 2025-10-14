@@ -1,4 +1,4 @@
-From 267fbd0ab0eaa93b42539af8de39f25ce476ab66 Mon Sep 17 00:00:00 2001
+From 816029a3c96a4a07f357a8803dcae7e79307bb5e Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Sat, 13 Aug 2022 15:01:52 +0100
 Subject: [PATCH 2/3] Patch: Activate HPP-FCL
@@ -21,5 +21,5 @@ index ade4efd..180761f 100644
         "Build the library with the automatic differentiation support (via CppAD)" OFF)
  option(BUILD_WITH_CASADI_SUPPORT "Build the library with the support of CASADI" OFF)
 -- 
-2.49.0
+2.51.0
 
