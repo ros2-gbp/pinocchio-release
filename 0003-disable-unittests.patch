@@ -1,17 +1,17 @@
-From ff0d7a7d0d94d5cbca6431e358cf0b0a537b2b55 Mon Sep 17 00:00:00 2001
+From 03d99d7046affbf590a780536081450132f1a35a Mon Sep 17 00:00:00 2001
 From: Guilhem Saurel <guilhem.saurel@laas.fr>
 Date: Thu, 20 Feb 2025 11:52:11 +0100
 Subject: [PATCH 3/3] disable unittests
 
 ---
- CMakeLists.txt | 11 -----------
- 1 file changed, 11 deletions(-)
+ CMakeLists.txt | 13 -------------
+ 1 file changed, 13 deletions(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 180761f..c659d3c 100644
+index e9540d3..f67ef0a 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -462,17 +462,6 @@ add_subdirectory(bindings)
+@@ -494,19 +494,6 @@ endif()
  # --- EXECUTABLES --------------------------------------------------------------
  add_subdirectory(utils)
  
@@ -19,10 +19,12 @@ index 180761f..c659d3c 100644
 -add_subdirectory(unittest)
 -
 -# --- CHECK EXAMPLES -----------------------------------------------------------
--add_subdirectory(examples)
+-if(BUILD_EXAMPLES)
+-  add_subdirectory(examples)
+-endif()
 -
 -# --- BENCHMARKS ---------------------------------------------------------------
--if(BUILD_BENCHMARK)
+-if(BUILD_BENCHMARK AND NOT BUILD_STANDALONE_PYTHON_INTERFACE)
 -  add_subdirectory(benchmark)
 -endif()
 -
@@ -30,5 +32,5 @@ index 180761f..c659d3c 100644
  macro(EXPORT_VARIABLE var_name var_value)
    get_directory_property(has_parent PARENT_DIRECTORY)
 -- 
-2.51.0
+2.52.0
 
