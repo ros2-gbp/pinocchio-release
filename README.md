@@ -1,3 +1,26 @@
+## pinocchio (jazzy) - 3.9.0-1
+
+The packages in the `pinocchio` repository were released into the `jazzy` distro by running `/nix/store/rhf364g29a4h0nwdhf8lv17y9jh0i5gj-python3.13-bloom-0.13.0/bin/bloom-release -r jazzy pinocchio` on `Tue, 27 Jan 2026 13:59:47 -0000`
+
+The `pinocchio` package was released.
+
+Version of package(s) in repository `pinocchio`:
+
+- upstream repository: https://github.com/stack-of-tasks/pinocchio.git
+- release repository: https://github.com/ros2-gbp/pinocchio-release.git
+- rosdistro version: `3.8.0-1`
+- old version: `3.8.0-1`
+- new version: `3.9.0-1`
+
+Versions of tools used:
+
+- bloom version: `0.13.0`
+- catkin_pkg version: `1.1.0`
+- rosdep version: `0.25.1`
+- rosdistro version: `1.0.1`
+- vcstools version: `0.1.42`
+
+
 ## pinocchio (kilted) - 3.9.0-1
 
 The packages in the `pinocchio` repository were released into the `kilted` distro by running `/nix/store/rhf364g29a4h0nwdhf8lv17y9jh0i5gj-python3.13-bloom-0.13.0/bin/bloom-release -r kilted pinocchio` on `Tue, 27 Jan 2026 13:44:42 -0000`
