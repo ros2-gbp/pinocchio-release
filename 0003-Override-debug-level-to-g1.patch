@@ -1,4 +1,4 @@
-From f361ef7310647d524b08dfc47b9680c341159b7a Mon Sep 17 00:00:00 2001
+From 57e581d211b175f8787e139699a90c39a2843780 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 11 Oct 2022 23:27:10 +0100
 Subject: [PATCH 3/6] Override debug level to g1
@@ -8,7 +8,7 @@ Subject: [PATCH 3/6] Override debug level to g1
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/debian/rules.em b/debian/rules.em
-index 9266b55..3bd7fa9 100755
+index 9266b55ab3..3bd7fa95d1 100755
 --- a/debian/rules.em
 +++ b/debian/rules.em
 @@ -16,7 +16,8 @@ export LDFLAGS=-Wl,-s
@@ -22,5 +22,5 @@ index 9266b55..3bd7fa9 100755
  	BUILD_TESTING_ARG=-DBUILD_TESTING=OFF
  endif
 -- 
-2.51.0
+2.52.0
 

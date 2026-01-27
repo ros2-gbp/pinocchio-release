@@ -1,4 +1,4 @@
-From 1c66c060210947e455336b3a446922033c936cd0 Mon Sep 17 00:00:00 2001
+From 2f77fb76a3234c20365b8feecc7f3975f8773492 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Wed, 1 Feb 2023 00:17:00 +0000
 Subject: [PATCH 6/6] Adding -fno-lto to CXXFLAGS as well
@@ -8,7 +8,7 @@ Subject: [PATCH 6/6] Adding -fno-lto to CXXFLAGS as well
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/debian/rules.em b/debian/rules.em
-index 746e698..26af70b 100755
+index 746e698ca9..26af70b1cc 100755
 --- a/debian/rules.em
 +++ b/debian/rules.em
 @@ -17,7 +17,7 @@ export PKG_CONFIG_PATH=@(InstallationPrefix)/lib/pkgconfig
@@ -21,5 +21,5 @@ index 746e698..26af70b 100755
  	BUILD_TESTING_ARG=-DBUILD_TESTING=OFF
  endif
 -- 
-2.51.0
+2.52.0
 

@@ -1,4 +1,4 @@
-From 06fe65431d6733e0c9cf21a6ec0388b4a365e4cf Mon Sep 17 00:00:00 2001
+From 471caad3e44dd1c357672be18041f30c387a598b Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Thu, 15 Sep 2022 21:02:33 +0100
 Subject: [PATCH 2/6] rules.em: Set LDFLAGS=-Wl,-s
@@ -8,7 +8,7 @@ Subject: [PATCH 2/6] rules.em: Set LDFLAGS=-Wl,-s
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/debian/rules.em b/debian/rules.em
-index 2b70fb7..9266b55 100755
+index 2b70fb704d..9266b55ab3 100755
 --- a/debian/rules.em
 +++ b/debian/rules.em
 @@ -12,7 +12,7 @@ export DH_VERBOSE=1
@@ -21,5 +21,5 @@ index 2b70fb7..9266b55 100755
  # Explicitly enable -DNDEBUG, see:
  # 	https://github.com/ros-infrastructure/bloom/issues/327
 -- 
-2.51.0
+2.52.0
 
