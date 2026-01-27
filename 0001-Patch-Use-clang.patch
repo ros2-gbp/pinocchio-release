@@ -1,4 +1,4 @@
-From 71945e0633cd8adaa8e46535932e5ef31c107da7 Mon Sep 17 00:00:00 2001
+From f48bd47cb3973c84b5b9a4348cf47ed2942e83f6 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Sat, 13 Aug 2022 15:01:31 +0100
 Subject: [PATCH 1/3] Patch: Use clang
@@ -8,10 +8,10 @@ Subject: [PATCH 1/3] Patch: Use clang
  1 file changed, 8 insertions(+)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 08b2efb..ade4efd 100644
+index d6368ca8cc..37211867ee 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -23,6 +23,14 @@ set(PROJECT_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR})
+@@ -25,6 +25,14 @@ set(PROJECT_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR})
  set(CXX_DISABLE_WERROR True)
  set(CMAKE_VERBOSE_MAKEFILE True)
  
@@ -27,5 +27,5 @@ index 08b2efb..ade4efd 100644
  # --- OPTIONS  ---------------------------------------
  # Need to be set before including base.cmake
 -- 
-2.51.0
+2.52.0
 
