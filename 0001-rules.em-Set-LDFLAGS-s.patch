@@ -1,4 +1,4 @@
-From f4ce1514b1146ab1d02f9243935c498e76d1687d Mon Sep 17 00:00:00 2001
+From 270f4c68c3b7b76ff46685403d77a5987e8cfa8f Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Thu, 15 Sep 2022 13:19:33 +0100
 Subject: [PATCH 1/6] rules.em: Set LDFLAGS=-s
