@@ -322,8 +322,7 @@ macro(FINDPYTHON)
     # Keep compatility with former jrl-cmake-modules versions
     if(PYTHON_DEB_LAYOUT)
       string(
-        REPLACE
-        "site-packages"
+        REPLACE "site-packages"
         "dist-packages"
         PYTHON_SITELIB
         "${PYTHON_SITELIB}"
@@ -334,8 +333,7 @@ macro(FINDPYTHON)
     # directory name
     if(PYTHON_PACKAGES_DIR)
       string(
-        REGEX REPLACE
-        "(site-packages|dist-packages)"
+        REGEX REPLACE "(site-packages|dist-packages)"
         "${PYTHON_PACKAGES_DIR}"
         PYTHON_SITELIB
         "${PYTHON_SITELIB}"
@@ -387,8 +385,7 @@ macro(FINDPYTHON)
     INSTALL_JRL_CMAKEMODULES_FILE("python.cmake")
     INSTALL_JRL_CMAKEMODULES_FILE("python-helpers.cmake")
     string(
-      CONCAT
-      PYTHON_EXPORT_DEPENDENCY_MACROS
+      CONCAT PYTHON_EXPORT_DEPENDENCY_MACROS
       "list(APPEND PYTHON_COMPONENTS ${PYTHON_COMPONENTS})\n"
       "list(REMOVE_DUPLICATES PYTHON_COMPONENTS)\n"
       "if(NOT FINDPYTHON_ALREADY_CALLED)\n"
@@ -414,8 +411,7 @@ macro(FINDPYTHON)
 
   # Log Python variables
   list(
-    APPEND
-    LOGGING_WATCHED_VARIABLES
+    APPEND LOGGING_WATCHED_VARIABLES
     PYTHONINTERP_FOUND
     PYTHONLIBS_FOUND
     PYTHON_LIBRARY_DIRS
@@ -486,8 +482,7 @@ macro(DYNAMIC_GRAPH_PYTHON_MODULE SUBMODULENAME LIBRARYNAME TARGETNAME)
 
   set(PYTHON_INSTALL_DIR "${PYTHON_SITELIB}/dynamic_graph/${SUBMODULENAME}")
   string(
-    REGEX REPLACE
-    "[^/]+"
+    REGEX REPLACE "[^/]+"
     ".."
     PYTHON_INSTALL_DIR_REVERSE
     ${PYTHON_INSTALL_DIR}
