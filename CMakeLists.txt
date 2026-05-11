@@ -764,19 +764,6 @@ endif()
 # --- EXECUTABLES --------------------------------------------------------------
 add_subdirectory(utils)
 
-# --- UNIT TESTS ---------------------------------------------------------------
-add_subdirectory(unittest)
-
-# --- CHECK EXAMPLES -----------------------------------------------------------
-if(BUILD_EXAMPLES)
-    add_subdirectory(examples)
-endif()
-
-# --- BENCHMARKS ---------------------------------------------------------------
-if(BUILD_BENCHMARK AND NOT BUILD_STANDALONE_PYTHON_INTERFACE)
-    add_subdirectory(benchmark)
-endif()
-
 # --- PACKAGING ----------------------------------------------------------------
 # Export variables in CMake module and in parent scope for workspace compatibility
 # PARENT_SCOPE_ONLY: If set: only export in parent scope
