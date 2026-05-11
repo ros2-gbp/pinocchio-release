@@ -6,7 +6,11 @@ set(PROJECT_URL "http://github.com/jrl-umi3218/${PROJECT_NAME}")
 
 project(${PROJECT_NAME} DESCRIPTION ${PROJECT_DESCRIPTION} LANGUAGES CXX)
 
-if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+# Avoid project to be installed when it's not the top-level cmake.
+# First detect super project, second one detect fetch content.
+# The seconde one is needed because jrl-cmakemodules are included
+# before top-level cmake project definition.
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND NOT ${PROJECT_NAME}_POPULATED)
   set(PROJECT_JRL_CMAKE_MODULE_DIR ${CMAKE_CURRENT_LIST_DIR})
   include(base.cmake)
   COMPUTE_PROJECT_ARGS(PROJECT_ARGS LANGUAGES CXX)
@@ -38,10 +42,22 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     DESTINATION ${INSTALL_DIR}
   )
 
-  # find . -maxdepth 1 -type f ! -path './.*' | sort
+  # find . -maxdepth 1 -type f ! -perm 111 ! -path './.*' | sort
+  install(
+    PROGRAMS
+      ./announce-gen
+      ./fix-license.sh
+      ./git-archive-all.py
+      ./git-archive-all.sh
+      ./gitlog-to-changelog
+      ./pixi.py
+      ./pyproject.py
+    DESTINATION ${INSTALL_DIR}
+  )
+
+  # find . -maxdepth 1 -type f ! -perm /111 ! -path './.*' | sort
   install(
     FILES
-      ./announce-gen
       ./apple.cmake
       ./base.cmake
       ./boost.cmake
@@ -66,11 +82,9 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
       ./doxygen.cmake
       ./eigen.cmake
       ./filefilter.txt
-      ./fix-license.sh
+      ./flake.lock
+      ./flake.nix
       ./geometric-tools.cmake
-      ./git-archive-all.py
-      ./git-archive-all.sh
-      ./gitlog-to-changelog
       ./GNUInstallDirs.cmake
       ./gtest.cmake
       ./header.cmake
@@ -97,13 +111,11 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
       ./oscheck.cmake
       ./package-config.cmake
       ./package.xml
-      ./pixi.py
       ./pkg-config.cmake
       ./pkg-config.pc.cmake
       ./portability.cmake
       ./post-project.cmake
       ./pthread.cmake
-      ./pyproject.py
       ./python.cmake
       ./python-helpers.cmake
       ./qhull.cmake
@@ -128,6 +140,18 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
       ./warning.hh.cmake
       ./xacro.cmake
     DESTINATION ${INSTALL_DIR}
+  )
+
+  # This package is architecture independent. Dont allow ROS to think otherwise
+  # and break everything by installing in lib/x86_64-linux-gnu, which does prevent
+  # find_package(jrl-cmakemodules) to work before a call to project().
+  # share is fine.
+  set(
+    CMAKE_INSTALL_LIBDIR
+    "${CMAKE_INSTALL_DATAROOTDIR}"
+    CACHE PATH
+    "Install exports in share, not lib"
+    FORCE
   )
 
   install(TARGETS ${PROJECT_NAME} EXPORT ${TARGETS_EXPORT_NAME})
