@@ -116,7 +116,7 @@ option(BUILD_ADVANCED_TESTING "Build the advanced tests (multiprecision, etc.) o
 option(BUILD_WITH_URDF_SUPPORT "Build the library with the URDF format support" ON)
 option(BUILD_WITH_SDF_SUPPORT "Build the library with the SDF format support" OFF)
 option(BUILD_WITH_COLLISION_SUPPORT
-       "Build the library with the collision support (required HPP-FCL)" ON)
+       "Build the library with the collision support (required HPP-FCL)" OFF)
 option(BUILD_WITH_AUTODIFF_SUPPORT
        "Build the library with the automatic differentiation support (via CppAD)" OFF)
 option(BUILD_WITH_CASADI_SUPPORT "Build the library with the support of CASADI" OFF)
@@ -475,6 +475,19 @@ endif()
 
 # --- EXECUTABLES --------------------------------------------------------------
 add_subdirectory(utils)
+
+# --- UNIT TESTS ---------------------------------------------------------------
+add_subdirectory(unittest)
+
+# --- CHECK EXAMPLES -----------------------------------------------------------
+if(BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif()
+
+# --- BENCHMARKS ---------------------------------------------------------------
+if(BUILD_BENCHMARK AND NOT BUILD_STANDALONE_PYTHON_INTERFACE)
+  add_subdirectory(benchmark)
+endif()
 
 # --- PACKAGING ----------------------------------------------------------------
 macro(EXPORT_VARIABLE var_name var_value)
