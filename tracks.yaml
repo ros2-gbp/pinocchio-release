@@ -66,10 +66,6 @@ tracks:
       -i :{release_inc} --os-name debian --os-not-required
     - git-bloom-generate -y rosrpm --prefix release/:{ros_distro} :{ros_distro} -i
       :{release_inc} --os-name fedora
-    - git-bloom-generate -y rosrpm --prefix release/:{ros_distro} :{ros_distro} -i
-      :{release_inc} --os-name rhel
-    - git-bloom-generate -y rosdynrpm --prefix release/:{ros_distro} :{ros_distro}
-      -i :{release_inc} --require-os fedora rhel
     devel_branch: devel
     last_release: v4.0.0
     last_version: 4.0.0
