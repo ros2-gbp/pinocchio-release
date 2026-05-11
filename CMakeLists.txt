@@ -152,7 +152,7 @@ option(
 option(
     BUILD_WITH_COLLISION_SUPPORT
     "Build the library with the collision support (required coal)"
-    OFF
+    ON
 )
 option(
     BUILD_WITH_AUTODIFF_SUPPORT
