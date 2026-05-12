@@ -1,161 +1,26 @@
-import sys
-from os.path import dirname, exists, join
+import typing
 
-import numpy as np
 import pinocchio as pin
-from pinocchio.robot_wrapper import RobotWrapper
 
 try:
-    from .path import EXAMPLE_ROBOT_DATA_MODEL_DIR, EXAMPLE_ROBOT_DATA_SOURCE_DIR
+    from .path import (  # noqa: F401
+        EXAMPLE_ROBOT_DATA_MODEL_DIR,
+        EXAMPLE_ROBOT_DATA_SOURCE_DIR,
+    )
 except ImportError:
     pass
 
-
-def getModelPath(subpath, verbose=False):
-    source = dirname(dirname(dirname(__file__)))  # top level source directory
-    paths = [
-        # function called from "make release" in build/ dir
-        join(dirname(dirname(dirname(source))), "robots"),
-        # function called from a build/ dir inside top level source
-        join(dirname(source), "robots"),
-        # function called from top level source dir
-        join(source, "robots"),
-    ]
-    try:
-        EXAMPLE_ROBOT_DATA_MODEL_DIR
-
-        # function called from installed project
-        paths.append(EXAMPLE_ROBOT_DATA_MODEL_DIR)
-        # function called from off-tree build dir
-        paths.append(EXAMPLE_ROBOT_DATA_SOURCE_DIR)
-    except NameError:
-        pass
-    paths += [join(p, "../../../share/example-robot-data/robots") for p in sys.path]
-    for path in paths:
-        if exists(join(path, subpath.strip("/"))):
-            if verbose:
-                print("using %s as modelPath" % path)
-            return path
-    raise IOError("%s not found" % subpath)
-
-
-def readParamsFromSrdf(
-    model,
-    SRDF_PATH,
-    verbose=False,
-    has_rotor_parameters=True,
-    referencePose="half_sitting",
-):
-    if has_rotor_parameters:
-        pin.loadRotorParameters(model, SRDF_PATH, verbose)
-    model.armature = np.multiply(
-        model.rotorInertia.flat, np.square(model.rotorGearRatio.flat)
-    )
-    pin.loadReferenceConfigurations(model, SRDF_PATH, verbose)
-    q0 = pin.neutral(model)
-    if referencePose is not None:
-        q0 = model.referenceConfigurations[referencePose].copy()
-    q0 = pin.normalize(model, q0)
-    return q0
-
-
-class RobotLoader(object):
-    path = ""
-    urdf_filename = ""
-    srdf_filename = ""
-    sdf_filename = ""
-    sdf_root_link_name = ""
-    sdf_parent_guidance = []
-    urdf_subpath = "robots"
-    srdf_subpath = "srdf"
-    sdf_subpath = ""
-    ref_posture = "half_sitting"
-    has_rotor_parameters = False
-    free_flyer = False
-    model_path = None
-
-    def __init__(self, verbose=False):
-        self.verbose = verbose
-        if self.urdf_filename:
-            if self.sdf_filename:
-                raise AttributeError("Please choose between URDF *or* SDF")
-            df_path = join(self.path, self.urdf_subpath, self.urdf_filename)
-            builder = RobotWrapper.BuildFromURDF
-            if self.model_path is None:
-                self.model_path = getModelPath(df_path, self.verbose)
-            self.df_path = join(self.model_path, df_path)
-            self.robot = builder(
-                self.df_path,
-                [join(self.model_path, "../..")],
-                pin.JointModelFreeFlyer() if self.free_flyer else None,
-            )
-        else:
-            df_path = join(self.path, self.sdf_subpath, self.sdf_filename)
-            try:
-                builder = RobotWrapper.BuildFromSDF
-                if self.model_path is None:
-                    self.model_path = getModelPath(df_path, self.verbose)
-                self.df_path = join(self.model_path, df_path)
-                if tuple(int(i) for i in pin.__version__.split(".")) > (2, 9, 1):
-                    self.robot = builder(
-                        self.df_path,
-                        package_dirs=[join(self.model_path, "../..")],
-                        root_joint=(
-                            pin.JointModelFreeFlyer() if self.free_flyer else None
-                        ),
-                        root_link_name=self.sdf_root_link_name,
-                        parent_guidance=self.sdf_parent_guidance,
-                    )
-                else:
-                    self.robot = builder(
-                        self.df_path,
-                        package_dirs=[join(self.model_path, "../..")],
-                        root_joint=(
-                            pin.JointModelFreeFlyer() if self.free_flyer else None
-                        ),
-                    )
-            except AttributeError:
-                raise ImportError("Building SDF models require pinocchio >= 3.0.0")
-
-        if self.srdf_filename:
-            self.srdf_path = join(
-                self.model_path, self.path, self.srdf_subpath, self.srdf_filename
-            )
-            self.robot.q0 = readParamsFromSrdf(
-                self.robot.model,
-                self.srdf_path,
-                self.verbose,
-                self.has_rotor_parameters,
-                self.ref_posture,
-            )
-
-            if pin.WITH_HPP_FCL and pin.WITH_HPP_FCL_BINDINGS:
-                # Add all collision pairs
-                self.robot.collision_model.addAllCollisionPairs()
-
-                # Remove collision pairs per SRDF
-                pin.removeCollisionPairs(
-                    self.robot.model, self.robot.collision_model, self.srdf_path, False
-                )
-
-                # Recreate collision data since the collision pairs changed
-                self.robot.collision_data = self.robot.collision_model.createData()
-        else:
-            self.srdf_path = None
-            self.robot.q0 = pin.neutral(self.robot.model)
-        root = getModelPath(self.path)
-        self.robot.urdf = join(root, self.path, self.urdf_subpath, self.urdf_filename)
-
-        if self.free_flyer:
-            self.addFreeFlyerJointLimits()
-
-    def addFreeFlyerJointLimits(self):
-        ub = self.robot.model.upperPositionLimit
-        ub[:7] = 1
-        self.robot.model.upperPositionLimit = ub
-        lb = self.robot.model.lowerPositionLimit
-        lb[:7] = -1
-        self.robot.model.lowerPositionLimit = lb
+from .human import HumanLoader
+from .panda import PandaLoader, PandaLoaderCollision
+from .talos import (
+    TalosArmLoader,
+    TalosBoxLoader,
+    TalosFullBoxLoader,
+    TalosFullLoader,
+    TalosLegsLoader,
+    TalosLoader,
+)
+from .utils import RobotLoader, getModelPath, readParamsFromSrdf  # noqa: F401
 
 
 class B1Loader(RobotLoader):
@@ -172,6 +37,69 @@ class Go1Loader(RobotLoader):
     urdf_filename = "go1.urdf"
     urdf_subpath = "urdf"
     srdf_filename = "go1.srdf"
+    ref_posture = "standing"
+    free_flyer = True
+
+
+class FalconBravo7NoEndEffectorLoader(RobotLoader):
+    path = "falcon_description"
+    urdf_filename = "falcon_bravo7_no_ee.urdf"
+    urdf_subpath = "urdf"
+    srdf_filename = "falcon_bravo7_no_ee.srdf"
+    ref_posture = "standing"
+    free_flyer = True
+
+
+class BluevoltaBravo7NoEndEffectorLoader(RobotLoader):
+    path = "bluevolta_description"
+    urdf_filename = "bluevolta_bravo7_no_ee.urdf"
+    urdf_subpath = "urdf"
+    srdf_filename = "bluevolta_bravo7_no_ee.srdf"
+    ref_posture = "standing"
+    free_flyer = True
+
+
+class FalconBravo7GripperLoader(RobotLoader):
+    path = "falcon_description"
+    urdf_filename = "falcon_bravo7_gripper.urdf"
+    urdf_subpath = "urdf"
+    srdf_filename = "falcon_bravo7_gripper.srdf"
+    ref_posture = "standing"
+    free_flyer = True
+
+
+class BluevoltaBravo7GripperLoader(RobotLoader):
+    path = "bluevolta_description"
+    urdf_filename = "bluevolta_bravo7_gripper.urdf"
+    urdf_subpath = "urdf"
+    srdf_filename = "bluevolta_bravo7_gripper.srdf"
+    ref_posture = "standing"
+    free_flyer = True
+
+
+class Bravo7NoEndEffectorLoader(RobotLoader):
+    path = "bravo7_description"
+    urdf_filename = "bravo7_no_ee.urdf"
+    urdf_subpath = "urdf"
+    srdf_filename = "bravo7_no_ee.srdf"
+    ref_posture = "standing"
+    free_flyer = False
+
+
+class Bravo7GripperLoader(RobotLoader):
+    path = "bravo7_description"
+    urdf_filename = "bravo7_gripper.urdf"
+    urdf_subpath = "urdf"
+    srdf_filename = "bravo7_gripper.srdf"
+    ref_posture = "standing"
+    free_flyer = False
+
+
+class Go2Loader(RobotLoader):
+    path = "go2_description"
+    urdf_filename = "go2.urdf"
+    urdf_subpath = "urdf"
+    srdf_filename = "go2.srdf"
     ref_posture = "standing"
     free_flyer = True
 
@@ -232,7 +160,10 @@ class ANYmalKinovaLoader(ANYmalLoader):
 class BaxterLoader(RobotLoader):
     path = "baxter_description"
     urdf_filename = "baxter.urdf"
+    srdf_filename = "baxter_manipulation.srdf"
     urdf_subpath = "urdf"
+    srdf_subpath = "srdf"
+    ref_posture = "neutral"
 
 
 class CassieLoader(RobotLoader):
@@ -246,7 +177,7 @@ class CassieLoader(RobotLoader):
     ref_posture = "standing"
     free_flyer = True
     sdf_root_link_name = "pelvis"
-    sdf_parent_guidance = [
+    sdf_parent_guidance: typing.ClassVar = [
         "left-roll-op",
         "left-yaw-op",
         "left-pitch-op",
@@ -262,102 +193,10 @@ class CassieLoader(RobotLoader):
     ]
 
 
-class TalosLoader(RobotLoader):
-    path = "talos_data"
-    urdf_filename = "talos_reduced.urdf"
-    srdf_filename = "talos.srdf"
-    free_flyer = True
-    has_rotor_parameters = True
-
-
 class AsrTwoDofLoader(RobotLoader):
     path = "asr_twodof_description"
     urdf_filename = "TwoDofs.urdf"
     urdf_subpath = "urdf"
-
-
-class TalosBoxLoader(TalosLoader):
-    urdf_filename = "talos_reduced_box.urdf"
-
-
-class TalosFullLoader(TalosLoader):
-    urdf_filename = "talos_full_v2.urdf"
-
-
-class TalosFullBoxLoader(TalosLoader):
-    urdf_filename = "talos_full_v2_box.urdf"
-
-
-class TalosArmLoader(TalosLoader):
-    urdf_filename = "talos_left_arm.urdf"
-    free_flyer = False
-
-
-class TalosLegsLoader(TalosLoader):
-    def __init__(self, verbose=False):
-        super(TalosLegsLoader, self).__init__(verbose=verbose)
-        legMaxId = 14
-        m1 = self.robot.model
-        m2 = pin.Model()
-        for j, M, name, parent, Y in zip(
-            m1.joints, m1.jointPlacements, m1.names, m1.parents, m1.inertias
-        ):
-            if j.id < legMaxId:
-                jid = m2.addJoint(parent, getattr(pin, j.shortname())(), M, name)
-                idx_q, idx_v = m2.joints[jid].idx_q, m2.joints[jid].idx_v
-                m2.upperPositionLimit[idx_q : idx_q + j.nq] = m1.upperPositionLimit[
-                    j.idx_q : j.idx_q + j.nq
-                ]
-                m2.lowerPositionLimit[idx_q : idx_q + j.nq] = m1.lowerPositionLimit[
-                    j.idx_q : j.idx_q + j.nq
-                ]
-                m2.velocityLimit[idx_v : idx_v + j.nv] = m1.velocityLimit[
-                    j.idx_v : j.idx_v + j.nv
-                ]
-                m2.effortLimit[idx_v : idx_v + j.nv] = m1.effortLimit[
-                    j.idx_v : j.idx_v + j.nv
-                ]
-                assert jid == j.id
-                m2.appendBodyToJoint(jid, Y, pin.SE3.Identity())
-
-        upperPos = m2.upperPositionLimit
-        upperPos[:7] = 1
-        m2.upperPositionLimit = upperPos
-        lowerPos = m2.lowerPositionLimit
-        lowerPos[:7] = -1
-        m2.lowerPositionLimit = lowerPos
-        effort = m2.effortLimit
-        effort[:6] = np.inf
-        m2.effortLimit = effort
-
-        # q2 = self.robot.q0[:19]
-        for f in m1.frames:
-            if f.parent < legMaxId:
-                m2.addFrame(f)
-
-        g2 = pin.GeometryModel()
-        for g in self.robot.visual_model.geometryObjects:
-            if g.parentJoint < 14:
-                g2.addGeometryObject(g)
-
-        self.robot.model = m2
-        self.robot.data = m2.createData()
-        self.robot.visual_model = g2
-        # self.robot.q0=q2
-        self.robot.visual_data = pin.GeometryData(g2)
-
-        # Load SRDF file
-        self.robot.q0 = readParamsFromSrdf(
-            self.robot.model,
-            self.srdf_path,
-            self.verbose,
-            self.has_rotor_parameters,
-            self.ref_posture,
-        )
-
-        assert (m2.armature[:6] == 0.0).all()
-        # Add the free-flyer joint limits to the new model
-        self.addFreeFlyerJointLimits()
 
 
 class HyQLoader(RobotLoader):
@@ -426,6 +265,11 @@ class TiagoNoHandLoader(TiagoLoader):
     urdf_filename = "tiago_no_hand.urdf"
 
 
+class TiagoProLoader(RobotLoader):
+    path = "tiago_pro_description"
+    urdf_filename = "tiago_pro.urdf"
+
+
 class ICubLoader(RobotLoader):
     path = "icub_description"
     urdf_filename = "icub.urdf"
@@ -437,11 +281,35 @@ class ICubReducedLoader(ICubLoader):
     urdf_filename = "icub_reduced.urdf"
 
 
-class PandaLoader(RobotLoader):
-    path = "panda_description"
-    urdf_filename = "panda.urdf"
+class AlexanderLoader(RobotLoader):
+    path = "alexander_description"
+    urdf_filename = "alexander_v1.lowerBodyOnly.urdf"
     urdf_subpath = "urdf"
-    srdf_filename = "panda.srdf"
+    free_flyer = True
+    ref_posture = "default"
+    srdf_filename = "alexander.srdf"
+
+
+class AlexNubHandsLoader(RobotLoader):
+    path = "alex_description"
+    urdf_filename = "alex_nub_hands.urdf"
+    urdf_subpath = "urdf"
+    ref_posture = "default"
+
+
+class AlexPsyonicHandsLoader(RobotLoader):
+    path = "alex_description"
+    urdf_filename = "alex_psyonic_hands.urdf"
+    urdf_subpath = "urdf"
+    srdf_filename = "alex_psyonic_hands.srdf"
+    ref_posture = "default"
+
+
+class AlexSakeHandsLoader(RobotLoader):
+    path = "alex_description"
+    urdf_filename = "alex_sake_hands.urdf"
+    urdf_subpath = "urdf"
+    srdf_filename = "alex_sake_hands.srdf"
     ref_posture = "default"
 
 
@@ -558,9 +426,33 @@ class IrisLoader(RobotLoader):
     free_flyer = True
 
 
+class PR2Loader(RobotLoader):
+    path = "pr2_description"
+    urdf_filename = "pr2.urdf"
+    urdf_subpath = "urdf"
+    srdf_filename = "pr2.srdf"
+    free_flyer = True
+    ref_posture = "tuck_left_arm"
+
+
+class xArm7Loader(RobotLoader):
+    path = "xarm_description"
+    urdf_subpath = "urdf"
+    urdf_filename = "xarm7.urdf"
+    srdf_filename = "xarm7.srdf"
+    ref_posture = "home"
+
+
 ROBOTS = {
     "b1": B1Loader,
+    "bravo7_gripper": Bravo7GripperLoader,
+    "bravo7_no_ee": Bravo7NoEndEffectorLoader,
+    "falcon_bravo7_no_ee": FalconBravo7NoEndEffectorLoader,
+    "falcon_bravo7_gripper": FalconBravo7GripperLoader,
+    "bluevolta_bravo7_no_ee": BluevoltaBravo7NoEndEffectorLoader,
+    "bluevolta_bravo7_gripper": BluevoltaBravo7GripperLoader,
     "go1": Go1Loader,
+    "go2": Go2Loader,
     "a1": A1Loader,
     "z1": Z1Loader,
     "b1_z1": B1Z1Loader,
@@ -575,6 +467,7 @@ ROBOTS = {
     "double_pendulum_simple": DoublePendulumSimpleLoader,
     "hector": HectorLoader,
     "hextilt": HextiltLoader,
+    "human": HumanLoader,
     "hyq": HyQLoader,
     "icub": ICubLoader,
     "icub_reduced": ICubReducedLoader,
@@ -582,6 +475,11 @@ ROBOTS = {
     "kinova": KinovaLoader,
     "laikago": LaikagoLoader,
     "panda": PandaLoader,
+    "panda_collision": PandaLoaderCollision,
+    "alexander": AlexanderLoader,
+    "alex_nub_hands": AlexNubHandsLoader,
+    "alex_psyonic_hands": AlexPsyonicHandsLoader,
+    "alex_sake_hands": AlexSakeHandsLoader,
     "allegro_right_hand": AllegroRightHandLoader,
     "allegro_left_hand": AllegroLeftHandLoader,
     "quadruped": QuadrupedLoader,
@@ -593,6 +491,7 @@ ROBOTS = {
     "solo8": Solo8Loader,
     "solo12": Solo12Loader,
     "finger_edu": FingerEduLoader,
+    "pr2": PR2Loader,
     "talos": TalosLoader,
     "talos_box": TalosBoxLoader,
     "talos_arm": TalosArmLoader,
@@ -602,6 +501,7 @@ ROBOTS = {
     "tiago": TiagoLoader,
     "tiago_dual": TiagoDualLoader,
     "tiago_no_hand": TiagoNoHandLoader,
+    "tiago_pro": TiagoProLoader,
     "ur3": UR5Loader,
     "ur3_gripper": UR3GripperLoader,
     "ur3_limited": UR3LimitedLoader,
@@ -610,6 +510,7 @@ ROBOTS = {
     "ur5_limited": UR5LimitedLoader,
     "ur10": UR10Loader,
     "ur10_limited": UR10LimitedLoader,
+    "xarm7": xArm7Loader,
 }
 
 
@@ -617,9 +518,7 @@ def loader(name, display=False, rootNodeName="", verbose=False):
     """Load a robot by its name, and optionally display it in a viewer."""
     if name not in ROBOTS:
         robots = ", ".join(sorted(ROBOTS.keys()))
-        raise ValueError(
-            "Robot '%s' not found. Possible values are %s" % (name, robots)
-        )
+        raise ValueError(f"Robot '{name}' not found. Possible values are {robots}")
     inst = ROBOTS[name](verbose=verbose)
     if display:
         if rootNodeName:
