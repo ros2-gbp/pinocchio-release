@@ -169,8 +169,7 @@ macro(_SETUP_PROJECT_PKG_CONFIG)
 
   # Watch variables.
   list(
-    APPEND
-    LOGGING_WATCHED_VARIABLES
+    APPEND LOGGING_WATCHED_VARIABLES
     _PKG_CONFIG_FOUND
     PKG_CONFIG_EXECUTABLE
     _PKG_CONFIG_PREFIX
@@ -343,8 +342,7 @@ macro(
 )
   # Decompose the equation
   string(
-    REGEX MATCH
-    "([^ ]+)( (>|>=|=|<=|<) (.*))?"
+    REGEX MATCH "([^ ]+)( (>|>=|=|<=|<) (.*))?"
     _UNUSED
     "${PKG_CONFIG_STRING}"
   )
@@ -358,8 +356,7 @@ macro(
   # Transform it into a valid variable prefix. 1. replace invalid characters
   # into underscores.
   string(
-    REGEX REPLACE
-    "[^a-zA-Z0-9]"
+    REGEX REPLACE "[^a-zA-Z0-9]"
     "_"
     ${_PKG_PREFIX_VAR}
     "${${_PKG_LIB_NAME_VAR}}"
@@ -465,15 +462,13 @@ macro(
 
     if(DEFINED ${PREFIX}_DEBUG)
       string(
-        REPLACE
-        ":/"
+        REPLACE ":/"
         "/"
         "${PREFIX}_DEBUG_LIBRARIES"
         "${${PREFIX}_DEBUG_LIBRARIES}"
       )
       string(
-        REPLACE
-        "-l:/"
+        REPLACE "-l:/"
         "/"
         "${PREFIX}_DEBUG_LDFLAGS"
         "${${PREFIX}_DEBUG_LDFLAGS}"
@@ -483,8 +478,7 @@ macro(
 
   # Watch variables.
   list(
-    APPEND
-    LOGGING_WATCHED_VARIABLES
+    APPEND LOGGING_WATCHED_VARIABLES
     ${PREFIX}_FOUND
     ${PREFIX}_LIBRARIES
     ${PREFIX}_LIBRARY_DIRS
@@ -508,8 +502,7 @@ macro(
   )
   if(DEFINED ${PREFIX}_DEBUG)
     list(
-      APPEND
-      LOGGING_WATCHED_VARIABLES
+      APPEND LOGGING_WATCHED_VARIABLES
       ${PREFIX}_DEBUG_FOUND
       ${PREFIX}_DEBUG_LIBRARIES
       ${PREFIX}_DEBUG_LIBRARY_DIRS
@@ -544,8 +537,7 @@ macro(
       ERROR_QUIET
     )
     string(
-      REPLACE
-      "\n"
+      REPLACE "\n"
       ""
       "${PREFIX}_${VARIABLE_UC}"
       "${${PREFIX}_${VARIABLE_UC}}"
@@ -561,8 +553,7 @@ macro(
         ERROR_QUIET
       )
       string(
-        REPLACE
-        "\n"
+        REPLACE "\n"
         ""
         "${PREFIX}_DEBUG_${VARIABLE_UC}"
         "${${PREFIX}_DEBUG_${VARIABLE_UC}}"
@@ -671,8 +662,7 @@ macro(_GET_PKG_CONFIG_DEBUG_STRING PKG_CONFIG_STRING)
   )
     _PARSE_PKG_CONFIG_STRING("${PKG_CONFIG_STRING}" LIBRARY_NAME PREFIX)
     string(
-      REPLACE
-      "${LIBRARY_NAME}"
+      REPLACE "${LIBRARY_NAME}"
       "${LIBRARY_NAME}${PROJECT_DEBUG_POSTFIX}"
       LIBRARY_NAME
       "${PKG_CONFIG_STRING}"

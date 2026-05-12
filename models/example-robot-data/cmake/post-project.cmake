@@ -40,29 +40,62 @@ else(${ARGC})
 endif(${ARGC})
 
 option(BUILD_DOCUMENTATION "Build the documentation." ON)
-cmake_dependent_option(INSTALL_DOCUMENTATION "Install the documentation." ON
-                       BUILD_DOCUMENTATION OFF)
-option(INSTALL_GENERATED_HEADERS "Generate and install standard headers" ON)
-option(INSTALL_PKG_CONFIG_FILE "Generate and install standard .pc file" ON)
+cmake_dependent_option(
+  INSTALL_DOCUMENTATION
+  "Install the documentation."
+  ON
+  BUILD_DOCUMENTATION
+  OFF
+)
+
+option(BUILD_PYTHON_INTERFACE "Build the python bindings" ON)
+cmake_dependent_option(
+  BUILD_STANDALONE_PYTHON_INTERFACE
+  "Build only the python bindings. Require the main part of the project to be already installed"
+  OFF
+  BUILD_PYTHON_INTERFACE
+  OFF
+)
+cmake_dependent_option(
+  INSTALL_GENERATED_HEADERS
+  "Generate and install standard headers"
+  ON
+  "NOT BUILD_STANDALONE_PYTHON_INTERFACE"
+  OFF
+)
+cmake_dependent_option(
+  INSTALL_PKG_CONFIG_FILE
+  "Generate and install standard .pc file"
+  ON
+  "NOT BUILD_STANDALONE_PYTHON_INTERFACE"
+  OFF
+)
+cmake_dependent_option(
+  PROJECT_USE_CMAKE_EXPORT
+  "Generate and install CMake exports"
+  OFF
+  "NOT BUILD_STANDALONE_PYTHON_INTERFACE"
+  OFF
+)
 
 include(CTest)
 enable_testing()
 
-logging_initialize()
+LOGGING_INITIALIZE()
 
 # FIXME: normalize naming to <MODULE>_SETUP()
 if(COMMAND _setup_python_for_cython)
   _setup_python_for_cython()
 endif()
-_setup_project_warnings()
-_setup_project_header()
-_setup_project_dist()
-distcheck_setup()
-release_setup()
-_setup_project_deb()
-_setup_project_uninstall()
-_setup_project_pkg_config()
+_SETUP_PROJECT_WARNINGS()
+_SETUP_PROJECT_HEADER()
+_SETUP_PROJECT_DIST()
+DISTCHECK_SETUP()
+RELEASE_SETUP()
+_SETUP_PROJECT_DEB()
+_SETUP_PROJECT_UNINSTALL()
+_SETUP_PROJECT_PKG_CONFIG()
 if(BUILD_DOCUMENTATION)
-  _setup_project_documentation()
+  _SETUP_PROJECT_DOCUMENTATION()
 endif(BUILD_DOCUMENTATION)
-_setup_project_package_init()
+_SETUP_PROJECT_PACKAGE_INIT()
