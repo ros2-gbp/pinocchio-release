@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>jrl-cmakemodules</name>
-  <version>1.0.0</version>
+  <name>jrl_cmakemodules</name>
+  <version>1.1.2</version>
   <description>CMake utility toolbox</description>
   <url type="website">https://github.com/jrl-umi3218/jrl-cmakemodules</url>
 
@@ -106,9 +106,17 @@
   -->
 
   <buildtool_depend>cmake</buildtool_depend>
+
+  <!-- Dependency for the documentation building. -->
+  <depend>doxygen</depend>
+
+  <!-- Handles some search through pkg-config. -->
+  <depend>pkg-config</depend>
+
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- Other tools can request additional information be placed here -->
     <build_type>cmake</build_type>
+    <architecture_independent/>
   </export>
 </package>
