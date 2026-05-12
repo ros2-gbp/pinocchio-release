@@ -1,0 +1,25 @@
+From 663b5ba7f729a0c28c23c9e8971d1e137400b658 Mon Sep 17 00:00:00 2001
+From: Guilhem Saurel <guilhem.saurel@laas.fr>
+Date: Mon, 11 May 2026 19:42:52 +0200
+Subject: [PATCH 1/2] activate collision support
+
+---
+ CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 5420dbd216..5b37a38bdd 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -152,7 +152,7 @@ option(
+ option(
+     BUILD_WITH_COLLISION_SUPPORT
+     "Build the library with the collision support (required coal)"
+-    OFF
++    ON
+ )
+ option(
+     BUILD_WITH_AUTODIFF_SUPPORT
+-- 
+2.53.0
+
