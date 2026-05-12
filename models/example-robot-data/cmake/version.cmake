@@ -1,3 +1,17 @@
+#.rst:
+# Version
+# -----
+# The version of the project is defined directly from git.
+# If you wish to create a release :
+#.. code-block:: bash
+#
+#  make release VERSION=X.Y.Z
+#
+# The system then tries to create a compressed tar file.
+# It is then build, and install.
+# If this is working a signature is created.
+#
+
 # Copyright (C) 2008-2019 LAAS-CNRS, JRL AIST-CNRS, INRIA.
 #
 # This program is free software: you can redistribute it and/or modify it under
@@ -17,12 +31,8 @@ function(_COMPUTE_VERSION_FROM_DOT_VERSION_FILE)
   if(EXISTS ${PROJECT_SOURCE_DIR}/.version)
     # Yes, use it. This is a stable version.
     file(STRINGS .version _PROJECT_VERSION)
-    set(PROJECT_VERSION
-        ${_PROJECT_VERSION}
-        PARENT_SCOPE)
-    set(PROJECT_STABLE
-        TRUE
-        PARENT_SCOPE)
+    set(PROJECT_VERSION ${_PROJECT_VERSION} PARENT_SCOPE)
+    set(PROJECT_STABLE TRUE PARENT_SCOPE)
     message(STATUS "Package version (.version): ${_PROJECT_VERSION}")
   endif(EXISTS ${PROJECT_SOURCE_DIR}/.version)
 endfunction()
@@ -36,7 +46,8 @@ function(_COMPUTE_VERSION_FROM_GIT_DESCRIBE)
       COMMAND ${GIT} rev-parse --git-dir
       OUTPUT_VARIABLE GIT_PROJECT_DIR
       WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-      OUTPUT_STRIP_TRAILING_WHITESPACE)
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
 
     set(GIT_PROJECT_DIR "${PROJECT_SOURCE_DIR}/${GIT_PROJECT_DIR}")
     if(IS_DIRECTORY "${GIT_PROJECT_DIR}/shallow")
@@ -48,7 +59,7 @@ function(_COMPUTE_VERSION_FROM_GIT_DESCRIBE)
       # EXECUTE_PROCESS(COMMAND ${GIT} fetch --unshallow)
       message(
         WARNING
-          "It appears that your git repository is a shallow copy, meaning that the history has been truncated\n.
+        "It appears that your git repository is a shallow copy, meaning that the history has been truncated\n.
                       Please consider updating your git repository with `git fetch --unshallow` in order to download the full history with tags to recover the current release version."
       )
     endif(IS_SHALLOW)
@@ -63,7 +74,8 @@ function(_COMPUTE_VERSION_FROM_GIT_DESCRIBE)
       RESULT_VARIABLE GIT_DESCRIBE_RESULT
       OUTPUT_VARIABLE GIT_DESCRIBE_OUTPUT
       ERROR_VARIABLE GIT_DESCRIBE_ERROR
-      OUTPUT_STRIP_TRAILING_WHITESPACE)
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
 
     # Run diff-index to check whether the tree is clean or not.
     execute_process(
@@ -72,13 +84,12 @@ function(_COMPUTE_VERSION_FROM_GIT_DESCRIBE)
       RESULT_VARIABLE GIT_DIFF_INDEX_RESULT
       OUTPUT_VARIABLE GIT_DIFF_INDEX_OUTPUT
       ERROR_VARIABLE GIT_DIFF_INDEX_ERROR
-      OUTPUT_STRIP_TRAILING_WHITESPACE)
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
 
     # Check if the tree is clean.
     if(GIT_DIFF_INDEX_RESULT OR GIT_DIFF_INDEX_OUTPUT)
-      set(PROJECT_DIRTY
-          TRUE
-          PARENT_SCOPE)
+      set(PROJECT_DIRTY TRUE PARENT_SCOPE)
     endif()
 
     # Check if git describe worked and store the returned version number.
@@ -92,9 +103,7 @@ function(_COMPUTE_VERSION_FROM_GIT_DESCRIBE)
       endif()
 
       if(_PROJECT_VERSION)
-        set(PROJECT_VERSION
-            ${_PROJECT_VERSION}
-            PARENT_SCOPE)
+        set(PROJECT_VERSION ${_PROJECT_VERSION} PARENT_SCOPE)
       endif()
 
       # If there is a dash in the version number, it is an unstable release,
@@ -102,13 +111,9 @@ function(_COMPUTE_VERSION_FROM_GIT_DESCRIBE)
       # 0.2.4-1-dg43 is unstable.
       string(REGEX MATCH "-" PROJECT_STABLE "${_PROJECT_VERSION}")
       if(NOT PROJECT_STABLE STREQUAL -)
-        set(PROJECT_STABLE
-            TRUE
-            PARENT_SCOPE)
+        set(PROJECT_STABLE TRUE PARENT_SCOPE)
       else()
-        set(PROJECT_STABLE
-            FALSE
-            PARENT_SCOPE)
+        set(PROJECT_STABLE FALSE PARENT_SCOPE)
       endif()
 
       message(STATUS "Package version (git describe): ${_PROJECT_VERSION}")
@@ -120,13 +125,16 @@ endfunction()
 function(_COMPUTE_VERSION_FROM_ROS_PACKAGE_XML_FILE)
   if(EXISTS ${PROJECT_SOURCE_DIR}/package.xml)
     file(READ "${PROJECT_SOURCE_DIR}/package.xml" PACKAGE_XML)
-    string(REGEX REPLACE "^.*<version>(.*)</version>.*$" "\\1"
-                         _PACKAGE_XML_VERSION ${PACKAGE_XML})
+    string(
+      REGEX REPLACE
+      "^.*<version>(.*)</version>.*$"
+      "\\1"
+      _PACKAGE_XML_VERSION
+      ${PACKAGE_XML}
+    )
     string(STRIP ${_PACKAGE_XML_VERSION} PACKAGE_XML_VERSION)
     if(NOT "${PACKAGE_XML_VERSION}" STREQUAL "")
-      set(PROJECT_VERSION
-          ${PACKAGE_XML_VERSION}
-          PARENT_SCOPE)
+      set(PROJECT_VERSION ${PACKAGE_XML_VERSION} PARENT_SCOPE)
     endif(NOT "${PACKAGE_XML_VERSION}" STREQUAL "")
     message(STATUS "Package version (ROS package.xml): ${PACKAGE_XML_VERSION}")
   endif(EXISTS ${PROJECT_SOURCE_DIR}/package.xml)
@@ -204,23 +212,29 @@ macro(VERSION_COMPUTE)
       set(PROJECT_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
     endif()
   endif()
+
   if(NOT DEFINED PROJECT_VERSION_COMPUTATION_METHODS)
-    list(APPEND PROJECT_VERSION_COMPUTATION_METHODS "ROS_PACKAGE_XML_FILE"
-         "DOT_VERSION_FILE" "GIT_DESCRIBE")
+    list(
+      APPEND
+      PROJECT_VERSION_COMPUTATION_METHODS
+      "ROS_PACKAGE_XML_FILE"
+      "DOT_VERSION_FILE"
+      "GIT_DESCRIBE"
+    )
   endif()
 
   foreach(_computation_method ${PROJECT_VERSION_COMPUTATION_METHODS})
     if(NOT PROJECT_VERSION)
       if(${_computation_method} STREQUAL "DOT_VERSION_FILE")
-        _compute_version_from_dot_version_file()
+        _COMPUTE_VERSION_FROM_DOT_VERSION_FILE()
       elseif(${_computation_method} STREQUAL "GIT_DESCRIBE")
-        _compute_version_from_git_describe()
+        _COMPUTE_VERSION_FROM_GIT_DESCRIBE()
       elseif(${_computation_method} STREQUAL "ROS_PACKAGE_XML_FILE")
-        _compute_version_from_ros_package_xml_file()
+        _COMPUTE_VERSION_FROM_ROS_PACKAGE_XML_FILE()
       else()
         message(
           AUTHOR_WARNING
-            "${_computation_method} is not a valid method to compute the project version."
+          "${_computation_method} is not a valid method to compute the project version."
         )
       endif()
     endif(NOT PROJECT_VERSION)
@@ -234,18 +248,28 @@ macro(VERSION_COMPUTE)
   # Set PROJECT_VERSION_{MAJOR,MINOR,PATCH} variables
   if(PROJECT_VERSION)
     # Compute the major, minor and patch version of the project
-    if(NOT DEFINED PROJECT_VERSION_MAJOR
-       AND NOT DEFINED PROJECT_VERSION_MINOR
-       AND NOT DEFINED PROJECT_VERSION_PATCH)
-      split_version_number(${PROJECT_VERSION} PROJECT_VERSION_MAJOR
-                           PROJECT_VERSION_MINOR PROJECT_VERSION_PATCH)
+    if(
+      NOT PROJECT_VERSION_MAJOR
+      AND NOT PROJECT_VERSION_MINOR
+      AND NOT PROJECT_VERSION_PATCH
+    )
+      SPLIT_VERSION_NUMBER(
+        ${PROJECT_VERSION}
+        PROJECT_VERSION_MAJOR
+        PROJECT_VERSION_MINOR
+        PROJECT_VERSION_PATCH
+      )
     endif()
   endif()
-
 endmacro()
 
-macro(SPLIT_VERSION_NUMBER VERSION VERSION_MAJOR_VAR VERSION_MINOR_VAR
-      VERSION_PATCH_VAR)
+macro(
+  SPLIT_VERSION_NUMBER
+  VERSION
+  VERSION_MAJOR_VAR
+  VERSION_MINOR_VAR
+  VERSION_PATCH_VAR
+)
   # Compute the major, minor and patch version of the project
   if(${VERSION} MATCHES UNKNOWN)
     set(${VERSION_MAJOR_VAR} UNKNOWN)
