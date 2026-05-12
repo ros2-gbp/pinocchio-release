@@ -152,7 +152,7 @@ option(
 option(
     BUILD_WITH_COLLISION_SUPPORT
     "Build the library with the collision support (required coal)"
-    OFF
+    ON
 )
 option(
     BUILD_WITH_AUTODIFF_SUPPORT
@@ -751,19 +751,6 @@ endif()
 
 # --- EXECUTABLES --------------------------------------------------------------
 add_subdirectory(utils)
-
-# --- UNIT TESTS ---------------------------------------------------------------
-add_subdirectory(unittest)
-
-# --- CHECK EXAMPLES -----------------------------------------------------------
-if(BUILD_EXAMPLES)
-    add_subdirectory(examples)
-endif()
-
-# --- BENCHMARKS ---------------------------------------------------------------
-if(BUILD_BENCHMARK AND NOT BUILD_STANDALONE_PYTHON_INTERFACE)
-    add_subdirectory(benchmark)
-endif()
 
 # --- PACKAGING ----------------------------------------------------------------
 # Export variables in CMake module and in parent scope for workspace compatibility
