@@ -23,17 +23,13 @@ function(LARGEST_COMMON_PREFIX a b prefix)
     set(len ${len_b})
   endif()
 
-  set(${prefix}
-      ""
-      PARENT_SCOPE)
+  set(${prefix} "" PARENT_SCOPE)
   foreach(size RANGE 1 ${len})
     string(SUBSTRING ${a} 0 ${size} sub_a)
     string(SUBSTRING ${b} 0 ${size} sub_b)
 
     if(${sub_a} STREQUAL ${sub_b})
-      set(${prefix}
-          ${sub_a}
-          PARENT_SCOPE)
+      set(${prefix} ${sub_a} PARENT_SCOPE)
     else()
       break()
     endif()
@@ -45,11 +41,9 @@ function(ADD_GROUP GROUP_NAME FILENAMES)
   foreach(filename ${${FILENAMES}})
     get_filename_component(filenamePath ${filename} PATH)
     get_filename_component(filenameName ${filename} NAME)
-    string(REGEX REPLACE "${PROJECT_BINARY_DIR}" "" filenamePath
-                         "${filenamePath}/")
-    string(REGEX REPLACE "${PROJECT_SOURCE_DIR}" "" filenamePath
-                         "${filenamePath}/")
-    string(REGEX REPLACE "//" "/" filenamePath ${filenamePath})
+    string(REPLACE "${PROJECT_BINARY_DIR}/" "" filenamePath "${filenamePath}/")
+    string(REPLACE "${PROJECT_SOURCE_DIR}/" "" filenamePath "${filenamePath}/")
+    string(REPLACE "//" "/" filenamePath ${filenamePath})
     list(APPEND REDUCED_FILENAMES ${filenamePath})
   endforeach()
 
@@ -60,7 +54,7 @@ function(ADD_GROUP GROUP_NAME FILENAMES)
     list(GET REDUCED_FILENAMES 0 str_a)
     foreach(id RANGE 1 ${max_id})
       list(GET REDUCED_FILENAMES ${id} str_b)
-      largest_common_prefix(${str_a} ${str_b} prefix)
+      LARGEST_COMMON_PREFIX(${str_a} ${str_b} prefix)
       set(str_a ${prefix})
       if("${str_a}" STREQUAL "")
         break()
@@ -74,10 +68,10 @@ function(ADD_GROUP GROUP_NAME FILENAMES)
     list(GET ${FILENAMES} ${id} filename)
     list(GET REDUCED_FILENAMES ${id} filenamePath)
     if(NOT ("${prefix}" STREQUAL ""))
-      string(REGEX REPLACE "${prefix}" "" filenamePath "${filenamePath}")
+      string(REPLACE "${prefix}" "" filenamePath "${filenamePath}")
     endif()
     if(NOT ("${filenamePath}" STREQUAL ""))
-      string(REGEX REPLACE "/" "\\\\" filenamePath ${filenamePath})
+      string(REPLACE "/" "\\\\" filenamePath ${filenamePath})
       source_group("${GROUP_NAME}\\${filenamePath}" FILES ${filename})
     else()
       source_group("${GROUP_NAME}" FILES ${filename})
@@ -91,7 +85,7 @@ endfunction(ADD_GROUP)
 # Add FILENAMES to "Header Files" group when using IDE Cmake Generator
 #
 macro(ADD_HEADER_GROUP FILENAMES)
-  add_group("Header Files" ${FILENAMES})
+  ADD_GROUP("Header Files" ${FILENAMES})
 endmacro(ADD_HEADER_GROUP FILENAMES)
 
 # ADD_SOURCE_GROUP
@@ -100,5 +94,5 @@ endmacro(ADD_HEADER_GROUP FILENAMES)
 # Add FILENAMES to "Source Files" group when using IDE Cmake Generator
 #
 macro(ADD_SOURCE_GROUP FILENAMES)
-  add_group("Source Files" ${FILENAMES})
+  ADD_GROUP("Source Files" ${FILENAMES})
 endmacro(ADD_SOURCE_GROUP FILENAMES)
