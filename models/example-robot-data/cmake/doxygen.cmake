@@ -1,4 +1,4 @@
-# Copyright (C) 2008-2023 LAAS-CNRS, JRL AIST-CNRS, INRIA.
+# Copyright (C) 2008-2025 LAAS-CNRS, JRL AIST-CNRS, INRIA.
 #
 # This program is free software: you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -254,6 +254,7 @@ macro(_SETUP_DOXYGEN_CONFIG_FILE configfile)
     MATHJAX_RELPATH
     MATHJAX_EXTENSIONS
     MATHJAX_CODEFILE
+    MATHJAX_VERSION
     SEARCHENGINE
     SERVER_BASED_SEARCH
     EXTERNAL_SEARCH
@@ -383,7 +384,8 @@ macro(_SETUP_DOXYGEN_CONFIG_FILE configfile)
     DOT_TRANSPARENT
     DOT_MULTI_TARGETS
     GENERATE_LEGEND
-    DOT_CLEANUP)
+    DOT_CLEANUP
+  )
     if(DEFINED DOXYGEN_${option})
       file(APPEND ${configfile} "${option} = ${DOXYGEN_${option}}\n")
     endif()
@@ -395,6 +397,39 @@ macro(_set_if_undefined variable)
     set(${variable} ${ARGN})
   endif()
 endmacro()
+
+# _SETUP_MATHJAX_DEFAULTS
+# ----------------------------
+#
+# Set MathJax defaults depending on the current version of Doxygen and whether
+# some flags were already set.
+#
+# If the Doxygen version is less than 1.9.2, the DOXYGEN_MATHJAX_VERSION option will be unset.
+# If a path to MathJax is not provided, we will either:
+#   - point to our local vendored version of MathJax 3
+#   - unset the MathJax path; the Doxygen HTML header will point to the MathJax 2 CDN.
+macro(_SETUP_MATHJAX_DEFAULTS)
+  if(DOXYGEN_VERSION VERSION_GREATER_EQUAL 1.9.2)
+    _set_if_undefined(DOXYGEN_MATHJAX_VERSION MathJax_3)
+  else()
+    # remove unsupported option
+    unset(DOXYGEN_MATHJAX_VERSION)
+    message(
+      STATUS
+      "Doxygen version inferior to 1.9.2. If MathJax is enabled, v2.7 will be used."
+    )
+    # set to empty string to use the MathJax CDN
+  endif()
+  if("${DOXYGEN_MATHJAX_VERSION}" STREQUAL "MathJax_3")
+    # If using MathJax 3, use our vendored version by default.
+    _set_if_undefined(
+      DOXYGEN_MATHJAX_RELPATH
+      ${PROJECT_JRL_CMAKE_MODULE_DIR}/doxygen/MathJax
+    )
+  else()
+    _set_if_undefined(DOXYGEN_MATHJAX_RELPATH)
+  endif()
+endmacro(_SETUP_MATHJAX_DEFAULTS)
 
 # _SETUP_DOXYGEN_DEFAULT_OPTIONS
 # ----------------------------
@@ -409,8 +444,10 @@ macro(_SETUP_DOXYGEN_DEFAULT_OPTIONS)
   _set_if_undefined(DOXYGEN_PROJECT_NUMBER "${PROJECT_VERSION}")
   _set_if_undefined(DOXYGEN_PROJECT_BRIEF "\"${PROJECT_DESCRIPTION}\"")
   _set_if_undefined(DOXYGEN_STRIP_FROM_PATH "${PROJECT_SOURCE_DIR}")
-  _set_if_undefined(DOXYGEN_STRIP_FROM_INC_PATH
-                    "${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/include")
+  _set_if_undefined(
+    DOXYGEN_STRIP_FROM_INC_PATH
+    "${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/include"
+  )
   _set_if_undefined(DOXYGEN_EXTRACT_ALL "YES")
   # ---------------------------------------------------------------------------
   # Configuration options related to warning and progress messages
@@ -421,8 +458,10 @@ macro(_SETUP_DOXYGEN_DEFAULT_OPTIONS)
   # Configuration options related to the input files
   # ---------------------------------------------------------------------------
   _set_if_undefined(DOXYGEN_IMAGE_PATH "${PROJECT_SOURCE_DIR}/doc")
-  _set_if_undefined(DOXYGEN_FILE_PATTERNS
-                    "*.cc *.cpp *.h *.hh *.hpp *.hxx *.idl")
+  _set_if_undefined(
+    DOXYGEN_FILE_PATTERNS
+    "*.cc *.cpp *.h *.hh *.hpp *.hxx *.idl"
+  )
   _set_if_undefined(DOXYGEN_RECURSIVE YES)
   # ---------------------------------------------------------------------------
   # Configuration options related to source browsing
@@ -437,6 +476,7 @@ macro(_SETUP_DOXYGEN_DEFAULT_OPTIONS)
   # ---------------------------------------------------------------------------
   _set_if_undefined(DOXYGEN_HTML_OUTPUT doxygen-html)
   _set_if_undefined(DOXYGEN_GENERATE_TREEVIEW YES)
+  _SETUP_MATHJAX_DEFAULTS()
   # ---------------------------------------------------------------------------
   # Configuration options related to the LaTeX output
   # ---------------------------------------------------------------------------
@@ -474,11 +514,13 @@ macro(_SETUP_DOXYGEN_DEFAULT_OPTIONS)
   # ---------------------------------------------------------------------------
   # Configuration options related to external references
   # ---------------------------------------------------------------------------
-  _set_if_undefined(DOXYGEN_GENERATE_TAGFILE "${PROJECT_NAME}.doxytag")
+  _set_if_undefined(
+    DOXYGEN_GENERATE_TAGFILE
+    "doxygen-html/${PROJECT_NAME}.doxytag"
+  )
   # ---------------------------------------------------------------------------
   # Configuration options related to the dot tool
   # ---------------------------------------------------------------------------
-
 endmacro(_SETUP_DOXYGEN_DEFAULT_OPTIONS)
 
 # _SETUP_PROJECT_DOCUMENTATION
@@ -491,27 +533,28 @@ endmacro(_SETUP_DOXYGEN_DEFAULT_OPTIONS)
 # DOXYGEN_DOT_IMAGE_FORMAT: format for dot images. Defaults to "svg".
 # DOXYGEN_USE_MATHJAX: use MathJax to render LaTeX equations. Defaults to "NO".
 macro(_SETUP_PROJECT_DOCUMENTATION)
-
   # Search for Doxygen.
   find_package(Doxygen)
 
   if(NOT DOXYGEN_FOUND)
     message(
-      STATUS "Failed to find Doxygen, documentation will not be generated.")
+      STATUS
+      "Failed to find Doxygen, documentation will not be generated."
+    )
   else(NOT DOXYGEN_FOUND)
     get_directory_property(has_parent_scope PARENT_DIRECTORY)
     set(JRL_CMAKEMODULE_DOXYFILE_PATH "${PROJECT_BINARY_DIR}/doc/Doxyfile")
     if(has_parent_scope)
-      set(DOXYGEN_FOUND
-          ${DOXYGEN_FOUND}
-          PARENT_SCOPE)
-      set(JRL_CMAKEMODULE_DOXYFILE_PATH
-          ${JRL_CMAKEMODULE_DOXYFILE_PATH}
-          PARENT_SCOPE)
+      set(DOXYGEN_FOUND ${DOXYGEN_FOUND} PARENT_SCOPE)
+      set(
+        JRL_CMAKEMODULE_DOXYFILE_PATH
+        ${JRL_CMAKEMODULE_DOXYFILE_PATH}
+        PARENT_SCOPE
+      )
     endif(has_parent_scope)
     unset(has_parent_scope)
 
-    _setup_doxygen_default_options()
+    _SETUP_DOXYGEN_DEFAULT_OPTIONS()
     # Generate variable to be substitued in Doxyfile.in for dot use.
     if(DOXYGEN_DOT_FOUND)
       set(DOXYGEN_HAVE_DOT YES)
@@ -521,81 +564,91 @@ macro(_SETUP_PROJECT_DOCUMENTATION)
     if(MSVC)
       # FIXME: it is impossible to trigger documentation installation at
       # install, so put the target in ALL instead.
+      if(NOT TARGET doc)
+        add_custom_target(doc ALL COMMENT "Generating Doxygen documentation")
+      endif()
       add_custom_target(
-        doc ALL
+        ${PROJECT_NAME}-doc
         COMMAND ${DOXYGEN_EXECUTABLE} ${JRL_CMAKEMODULE_DOXYFILE_PATH}
         WORKING_DIRECTORY doc
-        COMMENT "Generating Doxygen documentation")
+        COMMENT "Generating Doxygen documentation"
+      )
     else(MSVC)
+      if(NOT TARGET doc)
+        add_custom_target(doc COMMENT "Generating Doxygen documentation")
+      endif()
+
       add_custom_target(
-        doc
+        ${PROJECT_NAME}-doc
         COMMAND ${DOXYGEN_EXECUTABLE} ${JRL_CMAKEMODULE_DOXYFILE_PATH}
         WORKING_DIRECTORY doc
-        COMMENT "Generating Doxygen documentation")
+        COMMENT "Generating Doxygen documentation"
+      )
 
       if(INSTALL_DOCUMENTATION)
-        install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_MAKE_PROGRAM} doc)")
+        install(
+          CODE
+            "EXECUTE_PROCESS(COMMAND ${CMAKE_MAKE_PROGRAM} ${PROJECT_NAME}-doc)"
+        )
       endif(INSTALL_DOCUMENTATION)
     endif(MSVC)
-
-    if(DOXYGEN_USE_TEMPLATE_CSS)
-      add_custom_target(
-        generate-template-css
-        COMMAND
-          ${DOXYGEN_EXECUTABLE} -w html ${PROJECT_BINARY_DIR}/doc/header.html
-          ${PROJECT_BINARY_DIR}/doc/footer.html
-          ${PROJECT_BINARY_DIR}/doc/doxygen.css
-        BYPRODUCTS ${PROJECT_BINARY_DIR}/doc/header.html
-                   ${PROJECT_BINARY_DIR}/doc/footer.html
-                   ${PROJECT_BINARY_DIR}/doc/doxygen.css)
-      add_dependencies(doc generate-template-css)
-      _set_if_undefined(DOXYGEN_HTML_HEADER
-                        "${PROJECT_BINARY_DIR}/doc/header.html")
-      _set_if_undefined(DOXYGEN_HTML_FOOTER
-                        "${PROJECT_BINARY_DIR}/doc/footer.html")
-      _set_if_undefined(DOXYGEN_HTML_STYLESHEET
-                        "${PROJECT_BINARY_DIR}/doc/doxygen.css")
-    else(DOXYGEN_USE_TEMPLATE_CSS)
-      _set_if_undefined(DOXYGEN_HTML_FOOTER
-                        "${PROJECT_JRL_CMAKE_MODULE_DIR}/doxygen/footer.html")
-      _set_if_undefined(DOXYGEN_HTML_STYLESHEET
-                        "${PROJECT_JRL_CMAKE_MODULE_DIR}/doxygen/doxygen.css")
-    endif(DOXYGEN_USE_TEMPLATE_CSS)
+    add_dependencies(doc ${PROJECT_NAME}-doc)
 
     add_custom_command(
-      OUTPUT ${PROJECT_BINARY_DIR}/doc/${PROJECT_NAME}.doxytag
-             ${PROJECT_BINARY_DIR}/doc/doxygen-html
+      OUTPUT ${PROJECT_BINARY_DIR}/doc/doxygen-html
       COMMAND ${DOXYGEN_EXECUTABLE} ${JRL_CMAKEMODULE_DOXYFILE_PATH}
       WORKING_DIRECTORY doc
-      COMMENT "Generating Doxygen documentation")
+      COMMENT "Generating Doxygen documentation"
+    )
 
     # Clean generated files.
     set_property(
       DIRECTORY
       APPEND
-      PROPERTY ADDITIONAL_MAKE_CLEAN_FILES
-               ${PROJECT_BINARY_DIR}/doc/${PROJECT_NAME}.doxytag
-               ${PROJECT_BINARY_DIR}/doc/doxygen.log
-               ${PROJECT_BINARY_DIR}/doc/doxygen-html)
+      PROPERTY
+        ADDITIONAL_MAKE_CLEAN_FILES
+          ${PROJECT_BINARY_DIR}/doc/doxygen.log
+          ${PROJECT_BINARY_DIR}/doc/doxygen-html
+    )
 
-    # Install MathJax minimal version.
+    if(DEFINED DOXYGEN_HTML_STYLESHEET)
+      message(
+        WARNING
+        "The CMake variable DOXYGEN_HTML_STYLESHEET is defined, which sets the "
+        "deprecated Doxygen option HTML_STYLESHEET. It may be broken in the future."
+        " Set HTML_STYLESHEET instead."
+      )
+    endif()
+
+    # Copy our vendored MathJax.
     if("${DOXYGEN_USE_MATHJAX}" STREQUAL "YES")
-      file(COPY ${PROJECT_JRL_CMAKE_MODULE_DIR}/doxygen/MathJax
-           DESTINATION ${PROJECT_BINARY_DIR}/doc/doxygen-html)
+      file(
+        COPY ${PROJECT_JRL_CMAKE_MODULE_DIR}/doxygen/MathJax
+        DESTINATION ${PROJECT_BINARY_DIR}/doc/doxygen-html
+      )
+      # the variable is unset if Doxygen version < 1.9.2
+      # otherwise, MathJax_3 is the default.
+      if(DOXYGEN_MATHJAX_VERSION STREQUAL "MathJax_3")
+        message(
+          STATUS
+          "MathJax version 3 will be used. If MATHJAX_RELPATH is unset we will use the vendored MathJax. "
+          "If you have set it, check that it's pointing at a MathJax 3 distribution."
+        )
+      endif()
     endif()
 
     # Install generated files.
     if(INSTALL_DOCUMENTATION)
-      if(EXISTS ${PROJECT_BINARY_DIR}/doc/${PROJECT_NAME}.doxytag)
-        install(FILES ${PROJECT_BINARY_DIR}/doc/${PROJECT_NAME}.doxytag
-                DESTINATION ${CMAKE_INSTALL_DOCDIR}/doxygen-html)
-      endif()
-      install(DIRECTORY ${PROJECT_BINARY_DIR}/doc/doxygen-html
-              DESTINATION ${CMAKE_INSTALL_DOCDIR})
+      install(
+        DIRECTORY ${PROJECT_BINARY_DIR}/doc/doxygen-html
+        DESTINATION ${CMAKE_INSTALL_FULL_DOCDIR}
+      )
 
       if(EXISTS ${PROJECT_SOURCE_DIR}/doc/pictures)
-        install(DIRECTORY ${PROJECT_SOURCE_DIR}/doc/pictures
-                DESTINATION ${CMAKE_INSTALL_DOCDIR}/doxygen-html)
+        install(
+          DIRECTORY ${PROJECT_SOURCE_DIR}/doc/pictures
+          DESTINATION ${CMAKE_INSTALL_FULL_DOCDIR}/doxygen-html
+        )
       endif(EXISTS ${PROJECT_SOURCE_DIR}/doc/pictures)
     endif(INSTALL_DOCUMENTATION)
 
@@ -610,7 +663,8 @@ macro(_SETUP_PROJECT_DOCUMENTATION)
       DOXYGEN_DOT_PATH
       DOXYGEN_DOT_IMAGE_FORMAT
       DOXYGEN_USE_MATHJAX
-      DOXYGEN_USE_TEMPLATE_CSS)
+      DOXYGEN_USE_TEMPLATE_CSS
+    )
   endif(NOT DOXYGEN_FOUND)
 endmacro(_SETUP_PROJECT_DOCUMENTATION)
 
@@ -622,15 +676,22 @@ endmacro(_SETUP_PROJECT_DOCUMENTATION)
 #
 macro(_DOXYTAG_ENTRIES_FROM_CMAKE_DEPENDENCIES DEPENDENCIES VAR_OUT)
   foreach(PREFIX ${DEPENDENCIES})
-    if(DEFINED ${PREFIX}_DOXYGENDOCDIR
-       AND EXISTS ${${PREFIX}_DOXYGENDOCDIR}/${PREFIX}.doxytag)
-      set(${VAR_OUT}
-          "${${VAR_OUT}} \"${${PREFIX}_DOXYGENDOCDIR}/${PREFIX}.doxytag = ${${PREFIX}_DOXYGENDOCDIR}\""
+    if(
+      DEFINED ${PREFIX}_DOXYGENDOCDIR
+      AND EXISTS ${${PREFIX}_DOXYGENDOCDIR}/${PREFIX}.doxytag
+    )
+      get_filename_component(DEP_DOCDIR "${${PREFIX}_DOXYGENDOCDIR}" ABSOLUTE)
+      list(
+        APPEND
+        ${VAR_OUT}
+        "\"${${PREFIX}_DOXYGENDOCDIR}/${PREFIX}.doxytag = ${DEP_DOCDIR}\""
       )
     endif()
     if(DEFINED ${PREFIX}_DEPENDENCIES)
-      _doxytag_entries_from_cmake_dependencies("${${PREFIX}_DEPENDENCIES}"
-                                               ${VAR_OUT})
+      _DOXYTAG_ENTRIES_FROM_CMAKE_DEPENDENCIES(
+        "${${PREFIX}_DEPENDENCIES}"
+        ${VAR_OUT}
+      )
     endif()
   endforeach()
 endmacro()
@@ -643,6 +704,9 @@ endmacro()
 # Doxyfile.extra and Doxyfile files are generated at the end to allow the
 # replacement of user-defined variables.
 #
+# Additional doxygen tagfiles from dependencies can be added to
+# `DOXYGEN_TAGFILES_FROM_DEPENDENCIES`
+#
 macro(_SETUP_PROJECT_DOCUMENTATION_FINALIZE)
   if(DOXYGEN_FOUND)
     if(NOT "${DOXYGEN_USE_MATHJAX}" STREQUAL "YES")
@@ -651,74 +715,94 @@ macro(_SETUP_PROJECT_DOCUMENTATION_FINALIZE)
       find_program(DVIPS dvips DOC "DVI to PostScript converter")
       find_program(GS gs DOC "GhostScript interpreter")
 
-      if(NOT
-         (LATEX
-          AND GS
-          AND DVIPS))
+      if(NOT (LATEX AND GS AND DVIPS))
         message(
-          STATUS "Failed to find latex/dvips/gs, will use MathJax backend.")
+          STATUS
+          "Failed to find latex/dvips/gs, will use MathJax backend."
+        )
         set(DOXYGEN_USE_MATHJAX "YES")
       endif()
     endif()
-
-    if("${DOXYGEN_USE_MATHJAX}" STREQUAL "YES")
-      message(STATUS "Doxygen rendering: using MathJax backend")
-      set(DOXYGEN_HEADER_NAME "header-mathjax.html")
-    else()
-      message(STATUS "Doxygen rendering: using LaTeX backend")
-      set(DOXYGEN_HEADER_NAME "header.html")
-    endif()
-    _set_if_undefined(
-      DOXYGEN_HTML_HEADER
-      "${PROJECT_JRL_CMAKE_MODULE_DIR}/doxygen/${DOXYGEN_HEADER_NAME}")
-
     if(INSTALL_DOCUMENTATION)
-      # Find doxytag files To ignore this list of tag files, set variable
-      # DOXYGEN_TAGFILES
-      set(INSTALL_DOCDIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DOCDIR})
+      # Find doxytag files. To ignore this list of tag files,
+      # set the DOXYGEN_TAGFILES CMake variable or TAGFILES in doc/Doxyfile.extra.in.
+      set(_TAGFILES_FROM_DEPENDENCIES ${DOXYGEN_TAGFILES_FROM_DEPENDENCIES})
       set(PKG_REQUIRES ${_PKG_CONFIG_REQUIRES})
       list(APPEND PKG_REQUIRES ${_PKG_CONFIG_COMPILE_TIME_REQUIRES})
       foreach(PKG_CONFIG_STRING ${PKG_REQUIRES})
-        _parse_pkg_config_string(${PKG_CONFIG_STRING} LIBRARY_NAME PREFIX
-                                 PKG_CONFIG_STRING_NOSPACE)
+        _PARSE_PKG_CONFIG_STRING(
+          ${PKG_CONFIG_STRING}
+          LIBRARY_NAME
+          PREFIX
+          PKG_CONFIG_STRING_NOSPACE
+        )
         # If DOXYGENDOCDIR is specified, add a doc path.
-        if(DEFINED ${PREFIX}_DOXYGENDOCDIR
-           AND EXISTS ${${PREFIX}_DOXYGENDOCDIR}/${LIBRARY_NAME}.doxytag)
-          file(RELATIVE_PATH DEP_DOCDIR ${INSTALL_DOCDIR}
-               ${${PREFIX}_DOXYGENDOCDIR})
-
-          set(DOXYGEN_TAGFILES_FROM_DEPENDENCIES
-              "${DOXYGEN_TAGFILES_FROM_DEPENDENCIES} \"${${PREFIX}_DOXYGENDOCDIR}/${LIBRARY_NAME}.doxytag\"=\"${DEP_DOCDIR}\""
+        if(
+          DEFINED ${PREFIX}_DOXYGENDOCDIR
+          AND EXISTS ${${PREFIX}_DOXYGENDOCDIR}/${LIBRARY_NAME}.doxytag
+        )
+          # always use absolute path
+          get_filename_component(
+            DEP_DOCDIR
+            "${${PREFIX}_DOXYGENDOCDIR}"
+            ABSOLUTE
+          )
+          list(
+            APPEND
+            _TAGFILES_FROM_DEPENDENCIES
+            "\"${${PREFIX}_DOXYGENDOCDIR}/${LIBRARY_NAME}.doxytag = ${DEP_DOCDIR}\""
           )
         endif()
       endforeach()
-      _doxytag_entries_from_cmake_dependencies(
-        "${_PACKAGE_CONFIG_DEPENDENCIES_PROJECTS}"
-        DOXYGEN_TAGFILES_FROM_DEPENDENCIES)
+      _DOXYTAG_ENTRIES_FROM_CMAKE_DEPENDENCIES(
+        "${${PROJECT_NAME}_PACKAGE_CONFIG_DEPENDENCIES_PROJECTS}"
+        _TAGFILES_FROM_DEPENDENCIES
+      )
+      if(_TAGFILES_FROM_DEPENDENCIES)
+        # use native deduplication routine for comma-separated lists, then
+        # convert comma-separated list to space-separated list string.
+        list(REMOVE_DUPLICATES _TAGFILES_FROM_DEPENDENCIES)
+        string(
+          REPLACE
+          ";"
+          " "
+          DOXYGEN_TAGFILES_FROM_DEPENDENCIES
+          "${_TAGFILES_FROM_DEPENDENCIES}"
+        )
+      endif()
     endif()
     _set_if_undefined(DOXYGEN_TAGFILES "${DOXYGEN_TAGFILES_FROM_DEPENDENCIES}")
 
     if(EXISTS ${PROJECT_SOURCE_DIR}/include)
-      set(DOXYGEN_INCLUDE_PATH
-          "${DOXYGEN_INCLUDE_PATH} \"${PROJECT_SOURCE_DIR}/include\"")
+      set(
+        DOXYGEN_INCLUDE_PATH
+        "${DOXYGEN_INCLUDE_PATH} \"${PROJECT_SOURCE_DIR}/include\""
+      )
       set(DOXYGEN_INPUT "${DOXYGEN_INPUT} \"${PROJECT_SOURCE_DIR}/include\"")
     endif()
     if(EXISTS ${PROJECT_SOURCE_DIR}/src)
       set(DOXYGEN_INPUT "${DOXYGEN_INPUT} \"${PROJECT_SOURCE_DIR}/src\"")
     endif()
     if(EXISTS ${PROJECT_SOURCE_DIR}/tests)
-      set(DOXYGEN_EXAMPLE_PATH
-          "${DOXYGEN_EXAMPLE_PATH} \"${PROJECT_SOURCE_DIR}/tests\"")
+      set(
+        DOXYGEN_EXAMPLE_PATH
+        "${DOXYGEN_EXAMPLE_PATH} \"${PROJECT_SOURCE_DIR}/tests\""
+      )
     endif()
-    set(DOXYGEN_INCLUDE_PATH
-        "${DOXYGEN_INCLUDE_PATH} \"${PROJECT_BINARY_DIR}/include\"")
+    set(
+      DOXYGEN_INCLUDE_PATH
+      "${DOXYGEN_INCLUDE_PATH} \"${PROJECT_BINARY_DIR}/include\""
+    )
 
     # Generate Doxyfile and Doxyfile.extra.
     if(EXISTS ${PROJECT_SOURCE_DIR}/doc/Doxyfile.extra.in)
-      configure_file(${PROJECT_SOURCE_DIR}/doc/Doxyfile.extra.in
-                     ${PROJECT_BINARY_DIR}/doc/Doxyfile.extra @ONLY)
+      configure_file(
+        ${PROJECT_SOURCE_DIR}/doc/Doxyfile.extra.in
+        ${PROJECT_BINARY_DIR}/doc/Doxyfile.extra
+        @ONLY
+      )
       # Generate Doxyfile.
-      _setup_doxygen_config_file(${JRL_CMAKEMODULE_DOXYFILE_PATH})
+      _SETUP_DOXYGEN_CONFIG_FILE(${JRL_CMAKEMODULE_DOXYFILE_PATH})
       file(STRINGS ${PROJECT_BINARY_DIR}/doc/Doxyfile.extra doxyfile_extra)
       foreach(x ${doxyfile_extra})
         file(APPEND ${JRL_CMAKEMODULE_DOXYFILE_PATH} ${x} "\n")
@@ -728,7 +812,7 @@ macro(_SETUP_PROJECT_DOCUMENTATION_FINALIZE)
       # doxygen/Doxyfile.extra.in
       set(DOXYGEN_IMAGE_PATH "${PROJECT_SOURCE_DIR}/doc/pictures")
       # Generate Doxyfile.
-      _setup_doxygen_config_file(${JRL_CMAKEMODULE_DOXYFILE_PATH})
+      _SETUP_DOXYGEN_CONFIG_FILE(${JRL_CMAKEMODULE_DOXYFILE_PATH})
     endif()
   endif(DOXYGEN_FOUND)
 endmacro(_SETUP_PROJECT_DOCUMENTATION_FINALIZE)
