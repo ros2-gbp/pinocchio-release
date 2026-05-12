@@ -42,7 +42,7 @@ macro(SEARCH_FOR_LAPACK)
     set(CMAKE_LINK_LIBRARY_SUFFIX ".lib")
   endif(WIN32)
 
-  pkg_config_append_libs_raw("${LAPACK_LINKER_FLAGS};${LAPACK_LIBRARIES}")
+  PKG_CONFIG_APPEND_LIBS_RAW("${LAPACK_LINKER_FLAGS};${LAPACK_LIBRARIES}")
 
   # Watch variables.
   list(
@@ -55,5 +55,6 @@ macro(SEARCH_FOR_LAPACK)
     LAPACK95_FOUND
     BLA_STATIC
     BLA_VENDOR
-    BLA_F95)
+    BLA_F95
+  )
 endmacro(SEARCH_FOR_LAPACK)
