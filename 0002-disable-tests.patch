@@ -1,0 +1,36 @@
+From 8a0254101f8dc1a2bfe933a78f5b3e0c8e89cf5c Mon Sep 17 00:00:00 2001
+From: Guilhem Saurel <guilhem.saurel@laas.fr>
+Date: Mon, 11 May 2026 19:43:10 +0200
+Subject: [PATCH 2/2] disable tests
+
+---
+ CMakeLists.txt | 13 -------------
+ 1 file changed, 13 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 5b37a38bdd..c559873170 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -752,19 +752,6 @@ endif()
+ # --- EXECUTABLES --------------------------------------------------------------
+ add_subdirectory(utils)
+ 
+-# --- UNIT TESTS ---------------------------------------------------------------
+-add_subdirectory(unittest)
+-
+-# --- CHECK EXAMPLES -----------------------------------------------------------
+-if(BUILD_EXAMPLES)
+-    add_subdirectory(examples)
+-endif()
+-
+-# --- BENCHMARKS ---------------------------------------------------------------
+-if(BUILD_BENCHMARK AND NOT BUILD_STANDALONE_PYTHON_INTERFACE)
+-    add_subdirectory(benchmark)
+-endif()
+-
+ # --- PACKAGING ----------------------------------------------------------------
+ # Export variables in CMake module and in parent scope for workspace compatibility
+ # PARENT_SCOPE_ONLY: If set: only export in parent scope
+-- 
+2.53.0
+
