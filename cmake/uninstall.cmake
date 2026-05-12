@@ -13,6 +13,14 @@
 # You should have received a copy of the GNU General Public License along with
 # this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# .rst: .. ifmode:: internal
+#
+# .. variable::AUTO_UNINTSALL
+#
+# When this is ON, the install target will start by uninstalling
+
+option(AUTO_UNINSTALL "Enable auto-uninstall on install" ON)
+
 # _SETUP_PROJECT_UNINSTALL
 # ------------------------
 #
@@ -71,7 +79,7 @@ macro(_SETUP_PROJECT_UNINSTALL)
   endif(DEFINED CMAKE_BUILD_TYPE)
   file(
     GENERATE OUTPUT
-    "${PROJECT_BINARY_DIR}/cmake/$<CONFIGURATION>/cmake_reinstall.cmake"
+      "${PROJECT_BINARY_DIR}/cmake/$<CONFIGURATION>/cmake_reinstall.cmake"
     INPUT "${PROJECT_BINARY_DIR}/cmake/cmake_reinstall.cmake.configured"
   )
 
@@ -92,7 +100,9 @@ endmacro(_SETUP_PROJECT_UNINSTALL)
 if(DEFINED CMAKE_CONFIGURATION_TYPES)
   set(UNINSTALL_CONFIG_ARG "--config \${CMAKE_INSTALL_CONFIG_NAME}")
 endif()
-install(
-  CODE
-    "execute_process(COMMAND \"${CMAKE_COMMAND}\" --build \"${PROJECT_BINARY_DIR}\" ${UNINSTALL_CONFIG_ARG} --target uninstall)"
-)
+if(AUTO_UNINTSALL)
+  install(
+    CODE
+      "execute_process(COMMAND \"${CMAKE_COMMAND}\" --build \"${PROJECT_BINARY_DIR}\" ${UNINSTALL_CONFIG_ARG} --target uninstall)"
+  )
+endif()
