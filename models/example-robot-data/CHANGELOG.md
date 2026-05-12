@@ -6,6 +6,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [4.4.0] - 1980-01-01
+
+- The default git branch is now devel
+- ur_description : remove ALL "LightGrey" materials
+- CMake: allow BUILD_STANDALONE_PYTHON_INTERFACE
+- new robots:
+    - human whole body model
+    - IHMC Alexander
+    - xarm7
+
+## [4.3.0] - 2025-03-18
+
+- Add panda collision ([#242](https://github.com/Gepetto/example-robot-data/pull/242)) + ([#263](https://github.com/Gepetto/example-robot-data/pull/263))
+- Add baxter srdf ([#259](https://github.com/Gepetto/example-robot-data/pull/259))
+- Update Go2 collision for convex hull of mesh and remove "Head_upper", "Head_lower", "XX_calflower", "XX_calflower1" links and joints ([#260](https://github.com/Gepetto/example-robot-data/pull/260))
+- Fix ROS2 installation ([#261](https://github.com/Gepetto/example-robot-data/pull/261))
+- Add tiago pro ([#265](https://github.com/Gepetto/example-robot-data/pull/265))
+- Add nix flake
+
+## [4.2.0] - 2024-12-08
+
+### Added
+- Add PR2 robots ([#210](https://github.com/Gepetto/example-robot-data/pull/210))
+- Add GO2 robots ([#239](https://github.com/Gepetto/example-robot-data/pull/239))
+- Add Falcon Bravo7 Bluevolta robots ([#244](https://github.com/Gepetto/example-robot-data/pull/244))
+- Add alex robots ([#247](https://github.com/Gepetto/example-robot-data/pull/247))
+- Add compatibility with jrl-cmakemodules workspace ([#225](https://github.com/Gepetto/example-robot-data/pull/225))
+
+
 ## [4.1.0] - 2024-01-29
 
 - added CHANGELOG.md in https://github.com/Gepetto/example-robot-data/pull/193
@@ -295,7 +324,10 @@ Added optionnal python helpers, which depend on pinocchio
 
 Initial release
 
-[Unreleased]: https://github.com/gepetto/example-robot-data/compare/v4.1.0...HEAD
+[Unreleased]: https://github.com/gepetto/example-robot-data/compare/v4.4.0...HEAD
+[4.4.0]: https://github.com/gepetto/example-robot-data/compare/v4.3.0...v4.4.0
+[4.3.0]: https://github.com/gepetto/example-robot-data/compare/v4.2.0...v4.3.0
+[4.2.0]: https://github.com/gepetto/example-robot-data/compare/v4.1.0...v4.2.0
 [4.1.0]: https://github.com/gepetto/example-robot-data/compare/v4.0.9...v4.1.0
 [4.0.9]: https://github.com/gepetto/example-robot-data/compare/v4.0.8...v4.0.9
 [4.0.8]: https://github.com/gepetto/example-robot-data/compare/v4.0.7...v4.0.8
