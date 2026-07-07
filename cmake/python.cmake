@@ -384,6 +384,7 @@ macro(FINDPYTHON)
   if(PYTHON_EXPORT_DEPENDENCY)
     INSTALL_JRL_CMAKEMODULES_FILE("python.cmake")
     INSTALL_JRL_CMAKEMODULES_FILE("python-helpers.cmake")
+    INSTALL_JRL_CMAKEMODULES_FILE("pypa-metadata.cmake")
     string(
       CONCAT PYTHON_EXPORT_DEPENDENCY_MACROS
       "list(APPEND PYTHON_COMPONENTS ${PYTHON_COMPONENTS})\n"
@@ -614,3 +615,4 @@ macro(FIND_SCIPY)
 endmacro()
 
 include(${CMAKE_CURRENT_LIST_DIR}/python-helpers.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/pypa-metadata.cmake)
