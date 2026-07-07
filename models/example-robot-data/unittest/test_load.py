@@ -33,6 +33,9 @@ class RobotTestCase(unittest.TestCase):
                 self.assertIn(joint[12].decode(), one_kg_bodies)
         pybullet.disconnect(client_id)
 
+    def test_centauro(self):
+        self.check("centauro", 46, 45)
+
     def test_b1(self):
         self.check("b1", 19, 18)
 
@@ -44,6 +47,12 @@ class RobotTestCase(unittest.TestCase):
 
     def test_a1(self):
         self.check("a1", 19, 18)
+
+    def test_g1(self):
+        self.check("g1", 36, 35)
+
+    def test_g1_with_hands(self):
+        self.check("g1_with_hands", 50, 49)
 
     def test_anymal(self):
         self.check("anymal", 19, 18)
@@ -163,6 +172,12 @@ class RobotTestCase(unittest.TestCase):
 
     def test_bolt(self):
         self.check("bolt", 13, 12)
+
+    def test_so100(self):
+        self.check("so100", 13, 12)
+
+    def test_so101(self):
+        self.check("so101", 13, 12)
 
     def test_solo8(self):
         self.check("solo8", 15, 14)
