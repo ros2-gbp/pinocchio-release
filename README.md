@@ -1,3 +1,26 @@
+## pinocchio (rolling) - 4.1.0-1
+
+The packages in the `pinocchio` repository were released into the `rolling` distro by running `/nix/store/yfipm26gps6649vc1n9p5wd0w6ix3nrp-python3.13-bloom-0.14.3/bin/bloom-release -r rolling pinocchio` on `Tue, 07 Jul 2026 16:09:51 -0000`
+
+The `pinocchio` package was released.
+
+Version of package(s) in repository `pinocchio`:
+
+- upstream repository: https://github.com/stack-of-tasks/pinocchio.git
+- release repository: https://github.com/ros2-gbp/pinocchio-release.git
+- rosdistro version: `4.0.0-2`
+- old version: `4.0.0-2`
+- new version: `4.1.0-1`
+
+Versions of tools used:
+
+- bloom version: `0.14.3`
+- catkin_pkg version: `1.1.0`
+- rosdep version: `0.25.1`
+- rosdistro version: `1.0.1`
+- vcstools version: `0.1.42`
+
+
 ## pinocchio (lyrical) - 4.0.0-2
 
 The packages in the `pinocchio` repository were released into the `lyrical` distro by running `/nix/store/yr02v08v8dzvm5cbhvlbag590psbayxw-python3.13-bloom-0.14.3/bin/bloom-release -r lyrical pinocchio` on `Tue, 12 May 2026 14:12:09 -0000`
