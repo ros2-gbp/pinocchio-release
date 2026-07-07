@@ -1,44 +1,35 @@
 {
   description = "CMake utility toolbox";
 
-  inputs = {
-    flake-parts.url = "github:hercules-ci/flake-parts";
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-  };
+  inputs.gepetto.url = "github:gepetto/nix";
 
   outputs =
     inputs:
-    inputs.flake-parts.lib.mkFlake { inherit inputs; } (
-      { self, lib, ... }:
+    inputs.gepetto.lib.mkFlakoboros inputs (
+      { lib, ... }:
       {
-        systems = lib.systems.flakeExposed;
-        flake.overlays = {
-          default = final: prev: {
-            jrl-cmakemodules = prev.jrl-cmakemodules.overrideAttrs {
-              src = lib.fileset.toSource {
-                root = ./.;
-                fileset = lib.fileset.gitTracked ./.;
-              };
-            };
-          };
-        };
-        perSystem =
+        overrideAttrs.jrl-cmakemodules =
+          { pkgs-final, ... }:
           {
-            pkgs,
-            self',
-            system,
-            ...
-          }:
-          {
-            _module.args = {
-              pkgs = import inputs.nixpkgs {
-                inherit system;
-                overlays = [ self.overlays.default ];
-              };
-            };
-            packages = {
-              default = self'.packages.jrl-cmakemodules;
-              jrl-cmakemodules = pkgs.jrl-cmakemodules;
+            patches = [ ];
+            cmakeFlags = [
+              (lib.cmakeBool "JRL_CMAKEMODULES_GENERATE_API_DOC" true)
+              (lib.cmakeBool "JRL_CMAKEMODULES_BUILD_TESTS" true)
+            ];
+            doCheck = true;
+            checkInputs = [
+              pkgs-final.catch2_3
+              pkgs-final.matio
+              pkgs-final.python3Packages.boost
+              pkgs-final.python3Packages.nanobind
+              pkgs-final.python3Packages.numpy
+              pkgs-final.python3Packages.pytest
+              pkgs-final.simde
+              pkgs-final.suitesparse
+            ];
+            src = lib.fileset.toSource {
+              root = ./.;
+              fileset = lib.fileset.gitTracked ./.;
             };
           };
       }
