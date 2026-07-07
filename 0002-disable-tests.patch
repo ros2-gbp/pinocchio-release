@@ -1,4 +1,4 @@
-From 6c4806c011bf615d8041ce18794fe4a7d7e62d3a Mon Sep 17 00:00:00 2001
+From 829dd7b88595ee0a4c03c14605422cf3e79b2f68 Mon Sep 17 00:00:00 2001
 From: Guilhem Saurel <guilhem.saurel@laas.fr>
 Date: Mon, 11 May 2026 19:43:10 +0200
 Subject: [PATCH 2/2] disable tests
@@ -32,5 +32,5 @@ index 5b37a38bdd..c559873170 100644
  # Export variables in CMake module and in parent scope for workspace compatibility
  # PARENT_SCOPE_ONLY: If set: only export in parent scope
 -- 
-2.53.0
+2.54.0
 
