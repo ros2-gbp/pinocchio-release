@@ -23,6 +23,15 @@ from .talos import (
 from .utils import RobotLoader, getModelPath, readParamsFromSrdf  # noqa: F401
 
 
+class CentauroLoader(RobotLoader):
+    path = "centauro_description"
+    urdf_filename = "centauro.urdf"
+    urdf_subpath = "urdf"
+    srdf_filename = "centauro.srdf"
+    ref_posture = "homing_balanced"
+    free_flyer = True
+
+
 class B1Loader(RobotLoader):
     path = "b1_description"
     urdf_filename = "b1.urdf"
@@ -109,6 +118,22 @@ class A1Loader(RobotLoader):
     urdf_filename = "a1.urdf"
     urdf_subpath = "urdf"
     srdf_filename = "a1.srdf"
+    ref_posture = "standing"
+    free_flyer = True
+
+
+class G1Loader(RobotLoader):
+    path = "g1_description"
+    urdf_subpath = "urdf"
+    urdf_filename = "g1_29dof_rev_1_0.urdf"
+    ref_posture = "standing"
+    free_flyer = True
+
+
+class G1WithHandsLoader(G1Loader):
+    path = "g1_description"
+    urdf_subpath = "urdf"
+    urdf_filename = "g1_29dof_with_hand_rev_1_0.urdf"
     ref_posture = "standing"
     free_flyer = True
 
@@ -426,6 +451,20 @@ class IrisLoader(RobotLoader):
     free_flyer = True
 
 
+class SO100Loader(RobotLoader):
+    path = "so_arm_description"
+    urdf_filename = "so100.urdf"
+    urdf_subpath = "urdf"
+    free_flyer = True
+
+
+class SO101Loader(RobotLoader):
+    path = "so_arm_description"
+    urdf_filename = "so101.urdf"
+    urdf_subpath = "urdf"
+    free_flyer = True
+
+
 class PR2Loader(RobotLoader):
     path = "pr2_description"
     urdf_filename = "pr2.urdf"
@@ -444,6 +483,7 @@ class xArm7Loader(RobotLoader):
 
 
 ROBOTS = {
+    "centauro": CentauroLoader,
     "b1": B1Loader,
     "bravo7_gripper": Bravo7GripperLoader,
     "bravo7_no_ee": Bravo7NoEndEffectorLoader,
@@ -454,6 +494,8 @@ ROBOTS = {
     "go1": Go1Loader,
     "go2": Go2Loader,
     "a1": A1Loader,
+    "g1": G1Loader,
+    "g1_with_hands": G1WithHandsLoader,
     "z1": Z1Loader,
     "b1_z1": B1Z1Loader,
     "anymal": ANYmalLoader,
@@ -488,6 +530,8 @@ ROBOTS = {
     "simple_humanoid_classical": SimpleHumanoidClassicalLoader,
     "bolt": BoltLoader,
     "borinot": BorinotLoader,
+    "so100": SO100Loader,
+    "so101": SO101Loader,
     "solo8": Solo8Loader,
     "solo12": Solo12Loader,
     "finger_edu": FingerEduLoader,
