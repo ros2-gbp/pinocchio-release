@@ -1,4 +1,4 @@
-From 1ff8694f0f1f88eabd5f3c390fa7c8d50f96a56f Mon Sep 17 00:00:00 2001
+From 2f29f7229bf52e586622b4e25f79317157fdcd9b Mon Sep 17 00:00:00 2001
 From: Guilhem Saurel <guilhem.saurel@laas.fr>
 Date: Mon, 11 May 2026 19:42:52 +0200
 Subject: [PATCH 1/2] activate collision support
@@ -21,5 +21,5 @@ index 5420dbd216..5b37a38bdd 100644
  option(
      BUILD_WITH_AUTODIFF_SUPPORT
 -- 
-2.53.0
+2.54.0
 
